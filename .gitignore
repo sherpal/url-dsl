@@ -1,0 +1,12 @@
+target
+
+.DS_Store
+.idea
+
+.bloop
+.metals
+
+project/target
+project/.bloop
+
+*/target
