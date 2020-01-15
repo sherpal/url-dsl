@@ -1,7 +1,6 @@
 package urldsl.language
 
-import urldsl.language.PathSegmentWithQueryParams.UrlMatching
-import urldsl.vocabulary.{Param, ParamMatchOutput, PathMatchOutput, Segment}
+import urldsl.vocabulary._
 
 final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
     pathSegment: PathSegment[PathType, PathError],
@@ -39,11 +38,5 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
       (queryParams & otherParams)
         .asInstanceOf[QueryParameters[ev.Out, ParamsError]] // not necessary but IntelliJ complains.
     )
-
-}
-
-object PathSegmentWithQueryParams {
-
-  final case class UrlMatching[P, Q](path: P, params: Q)
 
 }

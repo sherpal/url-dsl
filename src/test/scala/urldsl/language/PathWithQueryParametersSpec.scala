@@ -9,7 +9,7 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
   import urldsl.language.QueryParameters.simpleParamErrorImpl._
   import urldsl.vocabulary.Segment
   import urldsl.vocabulary.Param
-  import urldsl.language.PathSegmentWithQueryParams.UrlMatching
+  import urldsl.vocabulary.UrlMatching
 
   "Readme example" should "work" in {
     val path = root / "hello" / segment[Int] / segment[String] / endOfSegments
