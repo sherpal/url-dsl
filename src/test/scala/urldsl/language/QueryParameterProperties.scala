@@ -24,7 +24,7 @@ final class QueryParameterProperties extends Properties("QueryParameters") {
 
   property("ListParam") = forAll(Gen.nonEmptyListOf(Gen.asciiStr)) { ls: List[String] =>
     val params = Map("ls" -> Param(ls))
-    listParam[String]("ls").matchParams(params) == Right(ParamMatchOutput(ls.reverse, Map()))
+    listParam[String]("ls").matchParams(params) == Right(ParamMatchOutput(ls, Map()))
   }
 
   property("OptionInt") = forAll { s: String =>

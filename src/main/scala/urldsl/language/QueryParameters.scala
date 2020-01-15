@@ -142,13 +142,15 @@ object QueryParameters {
       (_: Param) match {
         case Param(Nil) => Right(List[Q]())
         case Param(head :: tail) =>
-          tail.map(fromString.apply).foldLeft(fromString(head).map(List(_))) { (acc, next) =>
-            for {
-              firstResults <- acc
-              nextResult <- next
-            } yield nextResult +: firstResults // list is reversed for efficiency,
-          // it should not change the behaviour of the program as query parameters need to be commutative
-          }
+          tail
+            .map(fromString.apply)
+            .foldLeft(fromString(head).map(List(_))) { (acc, next) =>
+              for {
+                firstResults <- acc
+                nextResult <- next
+              } yield nextResult +: firstResults
+            }
+            .map(_.reverse)
       },
       q => Param(q.map(printer.apply))
     )
