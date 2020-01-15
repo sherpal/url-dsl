@@ -1,6 +1,7 @@
 package urldsl.language
 
 import urldsl.errors.{DummyError, ErrorFromThrowable, PathMatchingError, SimplePathMatchingError}
+import urldsl.parsers.{UrlStringParser, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
 import scala.language.implicitConversions
@@ -27,6 +28,14 @@ trait PathSegment[T, A] {
     * @return The "de-serialized" element with unused segment, if successful.
     */
   def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]]
+
+  def matchRawUrl[UrlParser <: UrlStringParser](
+      url: String
+  )(implicit urlStringParser: UrlStringParserGenerator[UrlParser]): Either[A, PathMatchOutput[T]] =
+    matchSegments(urlStringParser.parser(url).segments)
+
+  def matchPath(path: String): Either[A, PathMatchOutput[T]] =
+    matchSegments(Segment.fromPath(path))
 
   /**
     * Generate a list of segments representing the argument `t`.

@@ -3,6 +3,7 @@ package urldsl.language
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.DummyError
+import urldsl.parsers.JavaNetUrlStringParser
 import urldsl.vocabulary.{PathMatchOutput, Segment}
 
 class PathSegmentSpec extends AnyFlatSpec with Matchers {
@@ -38,6 +39,17 @@ class PathSegmentSpec extends AnyFlatSpec with Matchers {
 
     ($ / list.head / list.tail.head / list.tail.tail.head).matchSegments(list.map(Segment(_))) should be(
       Right(PathMatchOutput((), Nil))
+    )
+
+  }
+
+  "Matching a simple raw string" should "work" in {
+
+    val url = "http://localhost:8080/hello/32/true"
+    val path = $ / segment[String] / segment[Int] / true
+
+    path.matchRawUrl[JavaNetUrlStringParser](url) should be(
+      Right(PathMatchOutput(("hello", 32), Nil))
     )
 
   }
