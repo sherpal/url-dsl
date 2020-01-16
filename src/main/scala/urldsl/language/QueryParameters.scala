@@ -83,6 +83,10 @@ trait QueryParameters[Q, A] {
     createParams
   )
 
+  /**
+    * Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
+    * exception-free bijection between Q and R.
+    */
   final def as[R](implicit codec: Codec[Q, R]): QueryParameters[R, A] = factory(
     (matchParams _).andThen(_.map(_.map(codec.leftToRight))),
     (codec.rightToLeft _).andThen(createParams)

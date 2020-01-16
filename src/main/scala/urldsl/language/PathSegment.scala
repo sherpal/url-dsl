@@ -119,7 +119,7 @@ trait PathSegment[T, A] {
   )
 
   /**
-    * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be a exception-free
+    * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
     * bijection between T and U.
     */
   final def as[U](implicit codec: Codec[T, U]): PathSegment[U, A] = PathSegment.factory[U, A](
