@@ -1,29 +1,39 @@
-name := "UrlDSL"
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
-version := "0.1.0"
+ThisBuild / name := "UrlDSL"
 
-scalaVersion := "2.13.1"
+ThisBuild / version := "0.1.0"
 
-scalacOptions ++= Seq("-feature", "-deprecation")
+lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("shared"))
 
-libraryDependencies ++= Seq(
+val sharedJvm = shared.jvm
+val sharedJS = shared.js
+
+ThisBuild / crossScalaVersions := Seq("2.13.1", "2.12.8", "2.11.12")
+ThisBuild / scalaVersion := crossScalaVersions.value.head
+
+ThisBuild / scalacOptions ++= Seq("-feature", "-deprecation")
+
+ThisBuild / libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.1.0" % "test",
   "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
 )
 
 // used as `artifactId`
-name := "url-dsl"
+ThisBuild / name := "url-dsl"
 
 // used as `groupId`
-organization := "be.doeraene"
+ThisBuild / organization := "be.doeraene"
 
 // open source licenses that apply to the project
-licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
+ThisBuild / licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
 
-description := "A tiny library for parsing and creating urls in a type-safe way"
+ThisBuild / description := "A tiny library for parsing and creating urls in a type-safe way"
 
 import xerial.sbt.Sonatype._
-sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
+ThisBuild / sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
 
 // publish to the sonatype repository
-publishTo := sonatypePublishTo.value
+ThisBuild / publishTo := sonatypePublishTo.value
