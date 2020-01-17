@@ -1,6 +1,6 @@
 package urldsl.language
 
-import urldsl.url.UrlStringGenerator
+import urldsl.url.{UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
 final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
@@ -18,6 +18,18 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
         queryParams.matchParams(params) match {
           case Left(error)                           => Left(Right(error))
           case Right(ParamMatchOutput(paramsOut, _)) => Right(UrlMatching(pathOut, paramsOut))
+        }
+    }
+
+  def matchRawUrl[UrlParser <: UrlStringParser](url: String)(
+      implicit urlParser: UrlStringParserGenerator[UrlParser]
+  ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
+    pathSegment.matchRawUrl(url) match {
+      case Left(error) => Left(Left(error))
+      case Right(pathOutput) =>
+        queryParams.matchRawUrl(url) match {
+          case Left(error)         => Left(Right(error))
+          case Right(paramsOutput) => Right(UrlMatching(pathOutput, paramsOutput))
         }
     }
 

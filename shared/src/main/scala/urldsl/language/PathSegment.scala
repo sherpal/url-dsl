@@ -1,7 +1,7 @@
 package urldsl.language
 
 import urldsl.errors.{DummyError, ErrorFromThrowable, PathMatchingError, SimplePathMatchingError}
-import urldsl.url.{UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
+import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
 import scala.language.implicitConversions
@@ -24,18 +24,32 @@ trait PathSegment[T, A] {
     *          will return
     *          Right(PathMatchOutput("hello", List(Segment("3")))
     *
-    * @param segments The list of [[urldsl.vocabulary.Segment]] to match this path segment again.
+    * @param segments             The list of [[urldsl.vocabulary.Segment]] to match this path segment again.
     * @return The "de-serialized" element with unused segment, if successful.
     */
   def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]]
 
+  /**
+    * Matches the given raw `url` using the implicit [[UrlStringParser]] of type `UrlParser`.
+    *
+    * This method doesn't return the information about the remaining unused segments. The thought leading to this is
+    * that [[PathMatchOutput]] are supposed to be internal mechanics, while this method is supposed to be the exposed
+    * interface the this [[PathSegment]].
+    *
+    * @param url             the url to parse
+    * @param urlStringParser the [[UrlStringParserGenerator]] used to create the [[UrlStringParser]] that will actually
+    *                         parse the url to create the segments. The [[urldsl.url.JavaNetUrlGenerator]] is often a
+    *                         good choice on both the JVM and JS.
+    * @tparam UrlParser      type of the [[UrlStringParser]] to use
+    * @return                the output contained in the url, or the error is something fails.
+    */
   def matchRawUrl[UrlParser <: UrlStringParser](
       url: String
-  )(implicit urlStringParser: UrlStringParserGenerator[UrlParser]): Either[A, PathMatchOutput[T]] =
-    matchSegments(urlStringParser.parser(url).segments)
+  )(implicit urlStringParser: UrlStringParserGenerator[UrlParser]): Either[A, T] =
+    matchSegments(urlStringParser.parser(url).segments).map(_.output)
 
-  def matchPath(path: String): Either[A, PathMatchOutput[T]] =
-    matchSegments(Segment.fromPath(path))
+  def matchPath(path: String, decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder): Either[A, T] =
+    matchSegments(decoder.decodePath(path)).map(_.output)
 
   /**
     * Generate a list of segments representing the argument `t`.
@@ -105,6 +119,10 @@ trait PathSegment[T, A] {
         .filterOrElse(((_: PathMatchOutput[T]).output).andThen(predicate), error(segments)),
     createSegments
   )
+
+  /** Sugar for when `A =:= DummyError` */
+  final def filter(predicate: T => Boolean)(implicit ev: DummyError =:= A): PathSegment[T, A] =
+    filter(predicate, _ => ev(DummyError.dummyError))
 
   /**
     * Builds a [[PathSegment]] that first tries to match with this one, then tries to match with `that` one.

@@ -25,6 +25,23 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
     path.matchSegments(
       List(Segment("hello"), Segment("2019"), Segment("january"), Segment("16"))
     ) should be(Left(urldsl.errors.SimplePathMatchingError.EndOfSegmentRequired(List(Segment("16")))))
+
+    path.matchPath("/hello/2019/january") should be(
+      Right((2019, "january"))
+    )
+
+    params.matchQueryString("age=22&drinks=orange+juice&drinks=water") should be(
+      Right((22, List("orange juice", "water")))
+    )
+    // commutativity is there for query params with different names
+    params.matchQueryString("drinks=orange+juice&drinks=water&age=22") should be(
+      Right((22, List("orange juice", "water")))
+    )
+    // extra parameters are ignored
+    params.matchQueryString("drinks=orange+juice&drinks=water&age=22&unused=(something,else)") should be(
+      Right((22, List("orange juice", "water")))
+    )
+
   }
 
 }

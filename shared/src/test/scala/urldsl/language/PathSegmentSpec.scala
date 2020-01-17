@@ -49,7 +49,7 @@ class PathSegmentSpec extends AnyFlatSpec with Matchers {
     val path = $ / segment[String] / segment[Int] / true
 
     path.matchRawUrl[JavaNetUrlStringParser](url) should be(
-      Right(PathMatchOutput(("hello", 32), Nil))
+      Right(("hello", 32))
     )
 
   }

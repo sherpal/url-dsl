@@ -1,7 +1,7 @@
 package urldsl.language
 
 import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
-import urldsl.url.UrlStringGenerator
+import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
 import urldsl.vocabulary.{Codec, FromString, Param, ParamMatchOutput, Printer}
 
 trait QueryParameters[Q, A] {
@@ -23,6 +23,14 @@ trait QueryParameters[Q, A] {
     * @return The "de-serialized" element with unused parameters, if successful.
     */
   def matchParams(params: Map[String, Param]): Either[A, ParamMatchOutput[Q]]
+
+  def matchRawUrl[UrlParser <: UrlStringParser](
+      url: String
+  )(implicit urlStringParser: UrlStringParserGenerator[UrlParser]): Either[A, Q] =
+    matchParams(urlStringParser.parser(url).params).map(_.output)
+
+  def matchQueryString(queryString: String, decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder): Either[A, Q] =
+    matchParams(decoder.decodeParams(queryString)).map(_.output)
 
   /**
     * Generate a map of parameters representing the argument `q`.
