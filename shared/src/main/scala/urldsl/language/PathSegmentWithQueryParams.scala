@@ -1,5 +1,6 @@
 package urldsl.language
 
+import urldsl.url.UrlStringGenerator
 import urldsl.vocabulary._
 
 final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
@@ -26,7 +27,9 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
   def createUrl(path: PathType)(implicit ev: Unit =:= ParamsType): (List[Segment], Map[String, Param]) =
     createUrl(path, ev(()))
 
-  def createUrlString(path: PathType, params: ParamsType): String =
+  def createUrlString[Generator <: UrlStringGenerator](path: PathType, params: ParamsType)(
+      implicit generator: Generator
+  ): String =
     pathSegment.createPath(path) + "?" + queryParams.createParamsString(params)
 
   def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(

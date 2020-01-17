@@ -1,6 +1,7 @@
 package urldsl.language
 
 import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
+import urldsl.url.UrlStringGenerator
 import urldsl.vocabulary.{Codec, FromString, Param, ParamMatchOutput, Printer}
 
 trait QueryParameters[Q, A] {
@@ -32,13 +33,8 @@ trait QueryParameters[Q, A] {
     */
   def createParams(q: Q): Map[String, Param]
 
-  final def createParamsString(q: Q): String =
-    createParams(q)
-      .map {
-        case (name, Param(elems)) => elems.map(name + "=" + _).mkString("&") // todo: encode with java.net.URLEncoder
-      }
-      .filter(_.nonEmpty)
-      .mkString("&")
+  final def createParamsString[A <: UrlStringGenerator](q: Q)(implicit generator: A): String =
+    generator.makeParams(createParams(q))
 
   /**
     * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[urldsl.language.Tupler]]

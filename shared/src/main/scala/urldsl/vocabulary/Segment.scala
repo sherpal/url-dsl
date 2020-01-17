@@ -2,7 +2,9 @@ package urldsl.vocabulary
 
 import scala.language.implicitConversions
 
-final case class Segment(content: String)
+final case class Segment(content: String) {
+  def map(f: String => String): Segment = Segment(f(content))
+}
 
 object Segment {
 

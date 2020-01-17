@@ -1,4 +1,4 @@
-package urldsl.parsers
+package urldsl.url
 
 trait UrlStringParserGenerator[A <: UrlStringParser] {
 

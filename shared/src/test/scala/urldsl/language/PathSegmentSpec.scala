@@ -3,7 +3,7 @@ package urldsl.language
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.DummyError
-import urldsl.parsers.JavaNetUrlStringParser
+import urldsl.url.JavaNetUrlStringParser
 import urldsl.vocabulary.{PathMatchOutput, Segment}
 
 class PathSegmentSpec extends AnyFlatSpec with Matchers {
