@@ -1,6 +1,7 @@
 package urldsl.language
 
 import org.scalacheck._
+import urldsl.errors.DummyError
 import urldsl.vocabulary.{Param, ParamMatchOutput}
 
 import scala.util.Try
@@ -33,6 +34,14 @@ final class QueryParameterProperties extends Properties("QueryParameters") {
     val remainingParams = asInt.map(_ => Map[String, Param]()).getOrElse(params)
 
     param[Int]("s").?.matchParams(params) == Right(ParamMatchOutput(asInt.toOption, remainingParams))
+  }
+
+  property("Filtering") = forAll { x: Int =>
+    val params = Map("x" -> Param(List(x.toString)))
+    val filtering = (_: Int) > 0
+
+    param[Int]("x").filter(filtering).matchParams(params) ==
+      (if (filtering(x)) Right(ParamMatchOutput(x, Map())) else Left(DummyError.dummyError))
   }
 
 }

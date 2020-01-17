@@ -5,6 +5,8 @@ import urldsl.vocabulary.{FromString, Printer}
 
 final class QueryParametersImpl[A](implicit error: ParamMatchingError[A]) {
 
+  val empty: QueryParameters[Unit, A] = QueryParameters.empty[A]
+
   def param[Q](paramName: String)(implicit fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[Q, A] =
     QueryParameters.param(paramName)
 

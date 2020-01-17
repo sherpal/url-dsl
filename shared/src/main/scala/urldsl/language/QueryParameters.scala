@@ -33,7 +33,7 @@ trait QueryParameters[Q, A] {
     */
   def createParams(q: Q): Map[String, Param]
 
-  final def createParamsString[A <: UrlStringGenerator](q: Q)(implicit generator: A): String =
+  final def createParamsString[Generator <: UrlStringGenerator](q: Q)(implicit generator: Generator): String =
     generator.makeParams(createParams(q))
 
   /**
@@ -73,11 +73,31 @@ trait QueryParameters[Q, A] {
     _.map(createParams).getOrElse(Map())
   )
 
+  /**
+    * Adds an extra satisfying criteria to the output of this [[QueryParameters]].
+    * If the output satisfies the given `predicate`, then it is left unchanged. Otherwise, it returns the given
+    * `error`.
+    *
+    * Note that it doesn't check that arguments given to `createParams` satisfy this predicate
+    * // todo[behaviour]: should that change?
+    *
+    * @example {{{
+    *           param[Int]("age").filter(_ >= 0, (params: Map[String, Param]) => someError(params))
+    * }}}
+    *
+    * @param predicate the additional predicate that the output must satisfy
+    * @param error     the generated error in case it does not satisfy it
+    * @return          a new [[QueryParameters]] instance with the same types
+    */
   final def filter(predicate: Q => Boolean, error: Map[String, Param] => A): QueryParameters[Q, A] = factory(
     (params: Map[String, Param]) =>
       matchParams(params).filterOrElse(((_: ParamMatchOutput[Q]).output).andThen(predicate), error(params)),
     createParams
   )
+
+  /** Sugar for when `A =:= DummyError`. */
+  final def filter(predicate: Q => Boolean)(implicit ev: DummyError =:= A): QueryParameters[Q, A] =
+    filter(predicate, _ => ev(DummyError.dummyError))
 
   /**
     * Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
@@ -99,6 +119,11 @@ object QueryParameters {
     def matchParams(params: Map[String, Param]): Either[A, ParamMatchOutput[Q]] = matching(params)
     def createParams(q: Q): Map[String, Param] = creating(q)
   }
+
+  final def empty[A](implicit paramMatchingError: ParamMatchingError[A]): QueryParameters[Unit, A] = factory[Unit, A](
+    (params: Map[String, Param]) => Right(ParamMatchOutput((), params)),
+    _ => Map()
+  )
 
   final def simpleQueryParam[Q, A](
       paramName: String,

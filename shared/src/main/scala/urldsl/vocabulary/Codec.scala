@@ -32,4 +32,12 @@ object Codec {
       rightCodec: Codec[Middle, Right]
   ): Codec[Left, Right] = leftCodec ++ rightCodec
 
+  implicit def liftCodec[Left, Right](implicit codec: Codec[Left, Right]): Codec[List[Left], List[Right]] =
+    factory(_.map(codec.leftToRight), _.map(codec.rightToLeft))
+
+  implicit def zipCodec[T, U]: Codec[(List[T], List[U]), List[(T, U)]] = factory(
+    { case (ls1, ls2) => ls1 zip ls2 },
+    _.unzip
+  )
+
 }
