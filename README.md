@@ -15,14 +15,19 @@ val params = param[Int]("age") & listParam[String]("drinks")
 
 val pathWithParams = path ? params
 
-pathWithParams.matchUrl(
-  List(Segment("hello"), Segment("2019"), Segment("january")),
-  Map("age" -> Param(List("10")), "drinks" -> Param(List("Orange juice", "Water")))
-) == Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water"))))
+pathWithParams.matchRawUrl[JavaNetUrlStringParser](
+  "http://localhost:8080/hello/2019/january?age=10&drinks=orange+juice&drinks=water"
+) should be(
+  Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
+)
 
-path.matchSegments(
-  List(Segment("hello"), Segment("2019"), Segment("january"), Segment("16"))
-) == Left(urldsl.errors.SimplePathMatchingError.EndOfSegmentRequired(List(Segment("16"))))
+path.matchPath("/hello/2019/january") should be(
+  Right((2019, "january"))
+)
+
+params.matchQueryString("age=22&drinks=orange+juice&drinks=water") should be(
+  Right((22, List("orange juice", "water")))
+)
 ```
 
 For more example usages, head over the tests.

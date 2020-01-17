@@ -15,7 +15,7 @@ inThisBuild(
     licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php")),
     description := "A tiny library for parsing and creating urls in a type-safe way",
     sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com")),
-    version := "0.1.0",
+    version := "0.1.1",
     crossScalaVersions := Seq("2.13.1", "2.12.8", "2.11.12"),
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ++= Seq("-feature", "-deprecation"),

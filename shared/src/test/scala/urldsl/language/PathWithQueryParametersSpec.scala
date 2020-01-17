@@ -2,6 +2,7 @@ package urldsl.language
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import urldsl.url.JavaNetUrlStringParser
 
 class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
 
@@ -21,6 +22,12 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
       List(Segment("hello"), Segment("2019"), Segment("january")),
       Map("age" -> Param(List("10")), "drinks" -> Param(List("Orange juice", "Water")))
     ) should be(Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water")))))
+
+    pathWithParams.matchRawUrl[JavaNetUrlStringParser](
+      "http://localhost:8080/hello/2019/january?age=10&drinks=orange+juice&drinks=water"
+    ) should be(
+      Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
+    )
 
     path.matchSegments(
       List(Segment("hello"), Segment("2019"), Segment("january"), Segment("16"))
