@@ -3,7 +3,6 @@ package urldsl.language
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.DummyError
-import urldsl.url.JavaNetUrlStringParser
 import urldsl.vocabulary.{PathMatchOutput, Segment}
 
 class PathSegmentSpec extends AnyFlatSpec with Matchers {
@@ -48,7 +47,7 @@ class PathSegmentSpec extends AnyFlatSpec with Matchers {
     val url = "http://localhost:8080/hello/32/true"
     val path = $ / segment[String] / segment[Int] / true
 
-    path.matchRawUrl[JavaNetUrlStringParser](url) should be(
+    path.matchRawUrl(url) should be(
       Right(("hello", 32))
     )
 

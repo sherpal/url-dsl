@@ -21,13 +21,14 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
         }
     }
 
-  def matchRawUrl[UrlParser <: UrlStringParser](url: String)(
-      implicit urlParser: UrlStringParserGenerator[UrlParser]
+  def matchRawUrl[UrlParser <: UrlStringParser](
+      url: String,
+      parserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
   ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
-    pathSegment.matchRawUrl(url) match {
+    pathSegment.matchRawUrl(url, parserGenerator) match {
       case Left(error) => Left(Left(error))
       case Right(pathOutput) =>
-        queryParams.matchRawUrl(url) match {
+        queryParams.matchRawUrl(url, parserGenerator) match {
           case Left(error)         => Left(Right(error))
           case Right(paramsOutput) => Right(UrlMatching(pathOutput, paramsOutput))
         }

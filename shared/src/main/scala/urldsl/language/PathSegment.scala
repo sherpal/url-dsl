@@ -37,16 +37,17 @@ trait PathSegment[T, A] {
     * interface the this [[PathSegment]].
     *
     * @param url             the url to parse
-    * @param urlStringParser the [[UrlStringParserGenerator]] used to create the [[UrlStringParser]] that will actually
-    *                         parse the url to create the segments. The [[urldsl.url.JavaNetUrlGenerator]] is often a
-    *                         good choice on both the JVM and JS.
-    * @tparam UrlParser      type of the [[UrlStringParser]] to use
-    * @return                the output contained in the url, or the error is something fails.
+    * @param urlStringParserGenerator the [[UrlStringParserGenerator]] used to create the [[UrlStringParser]] that will
+    *                                 actually parse the url to create the segments. The
+    *                                 [[urldsl.url.JavaNetUrlGenerator]] is often a good choice on both the JVM and JS
+    *                                 (which are currently the two only targeted platforms)
+    * @return                        the output contained in the url, or the error is something fails.
     */
-  def matchRawUrl[UrlParser <: UrlStringParser](
-      url: String
-  )(implicit urlStringParser: UrlStringParserGenerator[UrlParser]): Either[A, T] =
-    matchSegments(urlStringParser.parser(url).segments).map(_.output)
+  def matchRawUrl(
+      url: String,
+      urlStringParserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
+  ): Either[A, T] =
+    matchSegments(urlStringParserGenerator.parser(url).segments).map(_.output)
 
   def matchPath(path: String, decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder): Either[A, T] =
     matchSegments(decoder.decodePath(path)).map(_.output)

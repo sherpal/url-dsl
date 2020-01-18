@@ -15,7 +15,7 @@ val params = param[Int]("age") & listParam[String]("drinks")
 
 val pathWithParams = path ? params
 
-pathWithParams.matchRawUrl[JavaNetUrlStringParser](
+pathWithParams.matchRawUrl(
   "http://localhost:8080/hello/2019/january?age=10&drinks=orange+juice&drinks=water"
 ) should be(
   Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
