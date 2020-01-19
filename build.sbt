@@ -12,6 +12,7 @@ ThisBuild / organization := "be.doeraene"
 ThisBuild / sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
 ThisBuild / description := "A tiny library for parsing and creating urls in a type-safe way"
 ThisBuild / licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
+//ThisBuild / homepage := Some(new java.net.URL("https://github.com/sherpal/url-dsl"))
 //ThisBuild / developers := List(
 //  Developer(
 //    "sherpal",
@@ -35,14 +36,6 @@ inThisBuild(
       "org.scalatest" %% "scalatest" % "3.1.0" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
     )
-//    developers := List(
-//      Developer(
-//        "sherpal",
-//        "Antoine Doeraene",
-//        "antoine.doeraene@gmail.com",
-//        new java.net.URL("https://github.com/sherpal")
-//      )
-//    )
   )
 )
 
@@ -50,7 +43,28 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("shared"))
   .settings(
-    publishTo := sonatypePublishTo.value
+    publishTo := sonatypePublishTo.value,
+    sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com")),
+    organization := "be.doeraene",
+    description := "A tiny library for parsing and creating urls in a type-safe way",
+    licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
+//    developers := List(
+//      Developer(
+//        "sherpal",
+//        "Antoine Doeraene",
+//        "antoine.doeraene@gmail.com",
+//        new java.net.URL("https://github.com/sherpal")
+//      )
+//    ),
+//    homepage := Some(new java.net.URL("https://github.com/sherpal/url-dsl")),
+//    pomExtra := <url>https://github.com/sherpal/url-dsl</url><developers>
+//      <developer>
+//        <id>sherpal</id>
+//        <name>Antoine Doeraene</name>
+//        <url>https://github.com/sherpal</url>
+//      </developer>
+//    </developers>
+
     //sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
   )
 
