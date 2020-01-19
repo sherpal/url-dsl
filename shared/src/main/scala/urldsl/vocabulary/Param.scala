@@ -17,9 +17,7 @@ object Param {
         case first :: second :: Nil => first -> second
       }
       .groupBy(_._1)
-      .view
-      .mapValues(_.map(_._2))
-      .mapValues(Param(_))
-      .toMap
+      .map { case (key, value) => key -> value.map(_._2) }
+      .map { case (key, value) => key -> Param(value) }
 
 }

@@ -10,3 +10,4 @@ project/target
 project/.bloop
 
 */target
+target/metals.sbt

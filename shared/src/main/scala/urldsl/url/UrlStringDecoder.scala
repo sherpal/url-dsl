@@ -7,7 +7,8 @@ trait UrlStringDecoder {
 
   def decodePath(path: String): List[Segment] = Segment.fromPath(path).map(_.map(decode(_)))
   def decodeParams(queryString: String): Map[String, Param] =
-    Param.fromQueryString(queryString).view.mapValues(_.transform(decode(_))).toMap
+    Param.fromQueryString(queryString)
+    .map { case (key, value) => key -> value.transform(decode(_)) }
 }
 
 object UrlStringDecoder {
