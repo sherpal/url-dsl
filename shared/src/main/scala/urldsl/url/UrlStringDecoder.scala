@@ -7,12 +7,9 @@ trait UrlStringDecoder {
 
   def decodePath(path: String): List[Segment] = Segment.fromPath(path).map(_.map(decode(_)))
   def decodeParams(queryString: String): Map[String, Param] =
-    Param.fromQueryString(queryString)
-    .map { case (key, value) => key -> value.transform(decode(_)) }
+    Param
+      .fromQueryString(queryString)
+      .map { case (key, value) => key -> value.transform(decode(_)) }
 }
 
-object UrlStringDecoder {
-
-  val defaultDecoder: UrlStringDecoder = (str: String, encoding: String) => java.net.URLDecoder.decode(str, encoding)
-
-}
+object UrlStringDecoder extends DefaultUrlStringDecoder

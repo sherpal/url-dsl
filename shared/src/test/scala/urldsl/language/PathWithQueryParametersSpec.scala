@@ -2,7 +2,6 @@ package urldsl.language
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import urldsl.url.JavaNetUrlStringParser
 
 class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
 
@@ -23,10 +22,10 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
       Map("age" -> Param(List("10")), "drinks" -> Param(List("Orange juice", "Water")))
     ) should be(Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water")))))
 
-    pathWithParams.matchRawUrl[JavaNetUrlStringParser](
-      "http://localhost:8080/hello/2019/january?age=10&drinks=orange+juice&drinks=water"
+    pathWithParams.matchRawUrl(
+      "http://localhost:8080/hello/2019/january?age=10&drinks=orangeJuice&drinks=water"
     ) should be(
-      Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
+      Right(UrlMatching((2019, "january"), (10, List("orangeJuice", "water"))))
     )
 
     path.matchSegments(
@@ -37,16 +36,16 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
       Right((2019, "january"))
     )
 
-    params.matchQueryString("age=22&drinks=orange+juice&drinks=water") should be(
-      Right((22, List("orange juice", "water")))
+    params.matchQueryString("age=22&drinks=orangeJuice&drinks=water") should be(
+      Right((22, List("orangeJuice", "water")))
     )
     // commutativity is there for query params with different names
-    params.matchQueryString("drinks=orange+juice&drinks=water&age=22") should be(
-      Right((22, List("orange juice", "water")))
+    params.matchQueryString("drinks=orangeJuice&drinks=water&age=22") should be(
+      Right((22, List("orangeJuice", "water")))
     )
     // extra parameters are ignored
-    params.matchQueryString("drinks=orange+juice&drinks=water&age=22&unused=(something,else)") should be(
-      Right((22, List("orange juice", "water")))
+    params.matchQueryString("drinks=orangeJuice&drinks=water&age=22&unused=(something,else)") should be(
+      Right((22, List("orangeJuice", "water")))
     )
 
   }

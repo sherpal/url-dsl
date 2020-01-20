@@ -42,8 +42,8 @@ trait QueryParameters[Q, A] {
     */
   def createParams(q: Q): Map[String, Param]
 
-  final def createParamsString[Generator <: UrlStringGenerator](q: Q)(implicit generator: Generator): String =
-    generator.makeParams(createParams(q))
+  final def createParamsString(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
+    encoder.makeParams(createParams(q))
 
   /**
     * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[urldsl.language.Tupler]]

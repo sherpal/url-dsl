@@ -1,6 +1,6 @@
 package urldsl.language
 
-import urldsl.url.{UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
+import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
 final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
@@ -21,7 +21,7 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
         }
     }
 
-  def matchRawUrl[UrlParser <: UrlStringParser](
+  def matchRawUrl(
       url: String,
       parserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
   ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
@@ -34,16 +34,43 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
         }
     }
 
+  def matchRawUrlOption(
+      url: String,
+      parserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
+  ): Option[UrlMatching[PathType, ParamsType]] = matchRawUrl(url, parserGenerator).toOption
+
+  def matchPathAndQuery(
+      path: String,
+      queryString: String,
+      decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder
+  ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
+    pathSegment.matchPath(path, decoder) match {
+      case Left(error) => Left(Left(error))
+      case Right(pathOutput) =>
+        queryParams.matchQueryString(queryString, decoder) match {
+          case Left(error)         => Left(Right(error))
+          case Right(paramsOutput) => Right(UrlMatching(pathOutput, paramsOutput))
+        }
+    }
+
+  def matchPathAndQueryOption(
+      path: String,
+      queryString: String,
+      decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder
+  ): Option[UrlMatching[PathType, ParamsType]] = matchPathAndQuery(path, queryString, decoder).toOption
+
   def createUrl(path: PathType, params: ParamsType): (List[Segment], Map[String, Param]) =
     (pathSegment.createSegments(path), queryParams.createParams(params))
 
   def createUrl(path: PathType)(implicit ev: Unit =:= ParamsType): (List[Segment], Map[String, Param]) =
     createUrl(path, ev(()))
 
-  def createUrlString[Generator <: UrlStringGenerator](path: PathType, params: ParamsType)(
-      implicit generator: Generator
+  def createUrlString(
+      path: PathType,
+      params: ParamsType,
+      generator: UrlStringGenerator = UrlStringGenerator.default
   ): String =
-    pathSegment.createPath(path) + "?" + queryParams.createParamsString(params)
+    pathSegment.createPath(path, generator) + "?" + queryParams.createParamsString(params, generator)
 
   def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(
       implicit

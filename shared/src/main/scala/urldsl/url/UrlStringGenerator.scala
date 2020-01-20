@@ -23,3 +23,5 @@ trait UrlStringGenerator {
   }
 
 }
+
+object UrlStringGenerator extends DefaultUrlStringGenerator

@@ -6,9 +6,4 @@ trait UrlStringParserGenerator {
 
 }
 
-object UrlStringParserGenerator {
-
-  final val defaultUrlStringParserGenerator: UrlStringParserGenerator =
-    JavaNetUrlStringParser.javaNetUrlStringParserGenerator
-
-}
+object UrlStringParserGenerator extends DefaultUrlParserGenerator

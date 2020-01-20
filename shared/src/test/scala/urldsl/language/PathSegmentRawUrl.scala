@@ -3,7 +3,7 @@ package urldsl.language
 import org.scalacheck.{Gen, Prop, Properties}
 import urldsl.errors.DummyError
 import urldsl.language.PathSegment.dummyErrorImpl._
-import urldsl.url.JavaNetUrlGenerator
+import urldsl.url.UrlStringGenerator
 import urldsl.vocabulary.Segment
 
 final class PathSegmentRawUrl extends Properties("PathSegmentRawUrl") {
@@ -19,7 +19,7 @@ final class PathSegmentRawUrl extends Properties("PathSegmentRawUrl") {
   property("StaticGeneration") = forAll(Gen.nonEmptyListOf(segmentGen)) { segments: List[Segment] =>
     val path = pathSegmentFromList(segments)
 
-    path.createPath[JavaNetUrlGenerator]() == JavaNetUrlGenerator.javaNetUrlGenerator.makePath(segments)
+    path.createPath() == UrlStringGenerator.default.makePath(segments)
   }
 
 }

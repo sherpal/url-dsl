@@ -31,11 +31,7 @@ inThisBuild(
     version := "0.1.3",
     crossScalaVersions := Seq("2.13.1", "2.12.10"),
     scalaVersion := crossScalaVersions.value.head,
-    scalacOptions ++= Seq("-feature", "-deprecation"),
-    libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.1.0" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
-    )
+    scalacOptions ++= Seq("-feature", "-deprecation")
   )
 )
 
@@ -43,29 +39,21 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("shared"))
   .settings(
+    name := "url-dsl",
     publishTo := sonatypePublishTo.value,
     sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com")),
     organization := "be.doeraene",
     description := "A tiny library for parsing and creating urls in a type-safe way",
-    licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
-//    developers := List(
-//      Developer(
-//        "sherpal",
-//        "Antoine Doeraene",
-//        "antoine.doeraene@gmail.com",
-//        new java.net.URL("https://github.com/sherpal")
-//      )
-//    ),
-//    homepage := Some(new java.net.URL("https://github.com/sherpal/url-dsl")),
-//    pomExtra := <url>https://github.com/sherpal/url-dsl</url><developers>
-//      <developer>
-//        <id>sherpal</id>
-//        <name>Antoine Doeraene</name>
-//        <url>https://github.com/sherpal</url>
-//      </developer>
-//    </developers>
-
-    //sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
+    licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php")),
+    libraryDependencies ++= Seq(
+      "org.scalatest" %%% "scalatest" % "3.1.0" % "test",
+      "org.scalacheck" %%% "scalacheck" % "1.14.3" % "test"
+    )
+  )
+  .jsSettings(
+    libraryDependencies ++= List(
+      "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+    )
   )
 
 val sharedJvm = shared.jvm
