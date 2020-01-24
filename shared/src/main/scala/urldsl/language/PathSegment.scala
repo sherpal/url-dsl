@@ -176,6 +176,10 @@ object PathSegment {
     factory[Unit, A](segments => Right(PathMatchOutput((), segments)), _ => Nil)
   final def root[A]: PathSegment[Unit, A] = empty
 
+  /** Simple path segment that matches nothing. This is the neutral of the || operator. */
+  final def noMatch[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] =
+    factory[Unit, A](_ => Left(pathMatchingError.unit), _ => Nil)
+
   /**
     * Simple trait factory for "single segment"-oriented path Segments.
     *
@@ -232,6 +236,30 @@ object PathSegment {
     segments => Right(PathMatchOutput(segments.map(_.content), Nil)),
     _.map(Segment.apply)
   )
+
+  /**
+    * [[PathSegment]] that matches one of the given different possibilities.
+    *
+    * This can be useful in a Router, when you want to delegate the final decision to an inner router.
+    * Since all possibilities are good, the creation of segment simply takes the first one.
+    */
+  final def oneOf[T, A](t: T, ts: T*)(
+      implicit fromString: FromString[T, A],
+      printer: Printer[T],
+      pathMatchingError: PathMatchingError[A]
+  ): PathSegment[Unit, A] = {
+    val allTs = t +: ts.toList
+    simplePathSegment(
+      s =>
+        fromString(s.content)
+          .filterOrElse(
+            allTs.contains,
+            pathMatchingError.wrongValue("One of: " + allTs.map(printer.apply).mkString(", "), s.content)
+          )
+          .map(_ => ()),
+      (_: Unit) => t
+    )
+  }
 
   /**
     * Returns a [[PathSegment]] which matches exactly the argument `t`.

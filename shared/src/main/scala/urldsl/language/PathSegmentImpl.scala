@@ -26,9 +26,13 @@ final class PathSegmentImpl[A](implicit error: PathMatchingError[A]) {
   val root: PathSegment[Unit, A] = PathSegment.root
   val remainingSegments: PathSegment[List[String], A] = PathSegment.remainingSegments
   val endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
+  val noMatch: PathSegment[Unit, A] = PathSegment.noMatch[A]
 
   def segment[T](implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[T, A] =
     PathSegment.segment[T, A]
+
+  def oneOf[T](t: T, ts: T*)(implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[Unit, A] =
+    PathSegment.oneOf(t, ts: _*)
 
 }
 

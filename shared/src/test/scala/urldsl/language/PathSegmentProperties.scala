@@ -87,4 +87,21 @@ final class PathSegmentProperties extends Properties("PathSegment") {
     ($ / segment[Int]).matchSegments(ls) == Left(e.malformed(ls.head.content))
   }
 
+  property("oneOfValuesMatches") = forAll(Gen.nonEmptyListOf(segmentGen)) { ls: List[Segment] =>
+    val path = $ / oneOf[String](ls.head.content, ls.tail.map(_.content): _*)
+
+    ls.forall(s => path.matchSegments(List(s)).isRight)
+  }
+
+  property("oneOfValuesNotMatch") = forAll(for {
+    strings <- Gen.nonEmptyListOf(Gen.asciiStr)
+    str <- Gen.asciiStr
+    if str.nonEmpty
+  } yield (strings, str)) {
+    case (choices, str) => // there will most likely be no match but it's still possible
+      val path = $ / oneOf[String](choices.head, choices.tail: _*)
+
+      path.matchSegments(List(Segment(str))).isRight == choices.contains(str)
+  }
+
 }

@@ -11,6 +11,7 @@ object SimplePathMatchingError {
   final case class WrongValue(expected: String, received: String) extends SimplePathMatchingError
   final case object MissingSegment extends SimplePathMatchingError
   final case class SimpleError(reason: String) extends SimplePathMatchingError
+  final case object AlwaysFalse extends SimplePathMatchingError
 
   implicit lazy val pathMatchingError: PathMatchingError[SimplePathMatchingError] =
     new PathMatchingError[SimplePathMatchingError] {
@@ -22,6 +23,8 @@ object SimplePathMatchingError {
       def wrongValue(expected: String, actual: String): SimplePathMatchingError = WrongValue(expected, actual)
 
       def missingSegment: SimplePathMatchingError = MissingSegment
+
+      def unit: SimplePathMatchingError = AlwaysFalse
     }
 
   implicit lazy val errorFromThrowable: ErrorFromThrowable[SimplePathMatchingError] = (throwable: Throwable) =>

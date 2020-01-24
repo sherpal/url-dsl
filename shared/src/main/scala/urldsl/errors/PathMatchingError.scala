@@ -17,5 +17,6 @@ trait PathMatchingError[A] {
   def endOfSegmentRequired(remainingSegments: List[Segment]): A
   def wrongValue(expected: String, actual: String): A
   def missingSegment: A
+  def unit: A
 
 }

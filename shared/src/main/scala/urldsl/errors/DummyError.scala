@@ -28,6 +28,8 @@ object DummyError {
       def missingSegment: DummyError = dummyError
 
       def fromThrowable(throwable: Throwable): DummyError = dummyError
+
+      def unit: DummyError = dummyError
     }
 
   implicit final lazy val dummyErrorIsFromThrowable: ErrorFromThrowable[DummyError] = (_: Throwable) => dummyError
