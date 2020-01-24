@@ -12,6 +12,11 @@ class PathSegmentSpec extends AnyFlatSpec with Matchers {
 
   val $ : PathSegment[Unit, DummyError] = root
 
+  "Empty path with end of segments" should "match the empty path" in {
+    ($ / endOfSegments).matchPath("/") should be(Right(()))
+    ($ / endOfSegments).matchPath("") should be(Right(()))
+  }
+
   "PathSegment" should "match the following segment lists" in {
 
     ($ / segment[Int] / segment[String]).matchSegments(List(Segment("17"), Segment("Hello"))).map(_.output) should be(

@@ -23,9 +23,9 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
     ) should be(Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water")))))
 
     pathWithParams.matchRawUrl(
-      "http://localhost:8080/hello/2019/january?age=10&drinks=orangeJuice&drinks=water"
+      "http://localhost:8080/hello/2019/january?age=10&drinks=orange%20juice&drinks=water"
     ) should be(
-      Right(UrlMatching((2019, "january"), (10, List("orangeJuice", "water"))))
+      Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
     )
 
     path.matchSegments(
@@ -36,16 +36,16 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
       Right((2019, "january"))
     )
 
-    params.matchQueryString("age=22&drinks=orangeJuice&drinks=water") should be(
-      Right((22, List("orangeJuice", "water")))
+    params.matchQueryString("age=22&drinks=orange%20juice&drinks=water") should be(
+      Right((22, List("orange juice", "water")))
     )
     // commutativity is there for query params with different names
-    params.matchQueryString("drinks=orangeJuice&drinks=water&age=22") should be(
-      Right((22, List("orangeJuice", "water")))
+    params.matchQueryString("drinks=orange%20juice&drinks=water&age=22") should be(
+      Right((22, List("orange juice", "water")))
     )
     // extra parameters are ignored
-    params.matchQueryString("drinks=orangeJuice&drinks=water&age=22&unused=(something,else)") should be(
-      Right((22, List("orangeJuice", "water")))
+    params.matchQueryString("drinks=orange%20juice&drinks=water&age=22&unused=(something,else)") should be(
+      Right((22, List("orange juice", "water")))
     )
 
   }

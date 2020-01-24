@@ -12,7 +12,7 @@ final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
   def path: String = urlParser.pathname
 
-  def decode(str: String, encoding: String): String = js.Dynamic.global.applyDynamic("encodeURI")(str).toString
+  def decode(str: String, encoding: String): String = js.Dynamic.global.applyDynamic("decodeURIComponent")(str).toString
 }
 
 object JSUrlStringParser {
