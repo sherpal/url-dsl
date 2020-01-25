@@ -30,18 +30,19 @@ trait PathSegment[T, A] {
   def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]]
 
   /**
-    * Matches the given raw `url` using the implicit [[UrlStringParser]] of type `UrlParser`.
+    * Matches the given raw `url` using the given [[UrlStringParserGenerator]] for creating a [[UrlStringParser]].
     *
     * This method doesn't return the information about the remaining unused segments. The thought leading to this is
     * that [[PathMatchOutput]] are supposed to be internal mechanics, while this method is supposed to be the exposed
-    * interface the this [[PathSegment]].
+    * interface of this [[PathSegment]].
     *
-    * @param url             the url to parse
+    * @param url                      the url to parse. It has to be a well formed URL, otherwise this could raise an
+    *                                  exception, depending on the privded [[UrlStringParserGenerator]].
     * @param urlStringParserGenerator the [[UrlStringParserGenerator]] used to create the [[UrlStringParser]] that will
     *                                 actually parse the url to create the segments. The default one is usually a good
     *                                 choice. It has different implementations in JVM and JS, but they *should* behave
     *                                 the same way.
-    * @return                         the output contained in the url, or the error is something fails.
+    * @return                         the output contained in the url, or the error if something fails.
     */
   def matchRawUrl(
       url: String,
@@ -143,11 +144,17 @@ trait PathSegment[T, A] {
 
   /**
     * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
-    * bijection between T and U.
+    * bijection between T and U (or at least an embedding, if you know that you are doing).
     */
-  final def as[U](implicit codec: Codec[T, U]): PathSegment[U, A] = PathSegment.factory[U, A](
-    (matchSegments _).andThen(_.map(_.map(codec.leftToRight))),
-    (codec.rightToLeft _).andThen(createSegments)
+  final def as[U](implicit codec: Codec[T, U]): PathSegment[U, A] = as[U](codec.leftToRight _, codec.rightToLeft _)
+
+  /**
+    * Casts this [[PathSegment]] to the new type U. The conversion functions should form an exception-free bijection
+    * between T and U (or at least an embedding, if you know that you are doing).
+    */
+  final def as[U](fromTToU: T => U, fromUToT: U => T): PathSegment[U, A] = PathSegment.factory[U, A](
+    (matchSegments _).andThen(_.map(_.map(fromTToU))),
+    fromUToT.andThen(createSegments)
   )
 
 }
