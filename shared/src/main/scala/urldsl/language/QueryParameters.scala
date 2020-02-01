@@ -42,6 +42,16 @@ trait QueryParameters[Q, A] {
     */
   def createParams(q: Q): Map[String, Param]
 
+  /**
+    * Generates a Map of parameters representing the argument `q`. The keys are not encoded, but the values are lists of
+    * encoded strings.
+    */
+  final def createParamsMap(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): Map[String, List[String]] =
+    encoder.makeParamsMap(createParams(q))
+
+  /**
+    * Generates the query string representing the argument `q`. This String can be used to be part of a URL.
+    */
   final def createParamsString(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makeParams(createParams(q))
 

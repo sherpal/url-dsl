@@ -30,18 +30,19 @@ trait PathSegment[T, A] {
   def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]]
 
   /**
-    * Matches the given raw `url` using the given [[UrlStringParserGenerator]] for creating a [[UrlStringParser]].
+    * Matches the given raw `url` using the given [[urldsl.url.UrlStringParserGenerator]] for creating a
+    * [[urldsl.url.UrlStringParser]].
     *
     * This method doesn't return the information about the remaining unused segments. The thought leading to this is
-    * that [[PathMatchOutput]] are supposed to be internal mechanics, while this method is supposed to be the exposed
-    * interface of this [[PathSegment]].
+    * that [[urldsl.vocabulary.PathMatchOutput]] are supposed to be internal mechanics, while this method is supposed to
+    * be the exposed interface of this [[urldsl.language.PathSegment]].
     *
     * @param url                      the url to parse. It has to be a well formed URL, otherwise this could raise an
-    *                                  exception, depending on the privded [[UrlStringParserGenerator]].
-    * @param urlStringParserGenerator the [[UrlStringParserGenerator]] used to create the [[UrlStringParser]] that will
-    *                                 actually parse the url to create the segments. The default one is usually a good
-    *                                 choice. It has different implementations in JVM and JS, but they *should* behave
-    *                                 the same way.
+    *                                  exception, depending on the provided [[urldsl.url.UrlStringParserGenerator]].
+    * @param urlStringParserGenerator the [[urldsl.url.UrlStringParserGenerator]] used to create the
+    *                                  [[urldsl.url.UrlStringParser]] that will actually parse the url to create the
+    *                                  segments. The default one is usually a good choice. It has different
+    *                                  implementations in JVM and JS, but they *should* behave the same way.
     * @return                         the output contained in the url, or the error if something fails.
     */
   def matchRawUrl(
@@ -81,7 +82,8 @@ trait PathSegment[T, A] {
     createPath((), encoder)
 
   /**
-    * Concatenates `this` [[PathSegment]] with `that` one, "tupling" the types with the [[Tupler]] rules.
+    * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Tupler]]
+    * rules.
     */
   final def /[U](that: PathSegment[U, A])(implicit ev: Tupler[T, U]): PathSegment[ev.Out, A] =
     PathSegment.factory[ev.Out, A](
@@ -105,7 +107,7 @@ trait PathSegment[T, A] {
     new PathSegmentWithQueryParams(this, params)
 
   /**
-    * Adds an extra satisfying criteria to the de-serialized output of this [[PathSegment]].
+    * Adds an extra satisfying criteria to the de-serialized output of this [[urldsl.language.PathSegment]].
     *
     * The new de-serialization works as follows:
     * - if the initial de-serialization fails, then it returns the generated error
@@ -269,9 +271,10 @@ object PathSegment {
   }
 
   /**
-    * Returns a [[PathSegment]] which matches exactly the argument `t`.
+    * Returns a [[urldsl.language.PathSegment]] which matches exactly the argument `t`.
     *
-    * This conversion is implicit if you can provide a [[FromString]] and a [[Printer]], so that it enables writing,
+    * This conversion is implicit if you can provide a [[urldsl.vocabulary.FromString]] and a
+    * [[urldsl.vocabulary.Printer]], so that it enables writing,
     * e.g.,
     * `root / "hello" / true`
     */

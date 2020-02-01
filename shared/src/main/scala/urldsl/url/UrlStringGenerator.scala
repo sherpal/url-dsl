@@ -9,9 +9,12 @@ trait UrlStringGenerator {
   def makePath(segments: List[Segment]): String =
     segments.map(_.content).map(encode(_)).filter(_.nonEmpty).mkString("/")
 
-  def makeParams(params: Map[String, Param]): String =
+  def makeParamsMap(params: Map[String, Param]): Map[String, List[String]] =
     params
       .map { case (key, value) => key -> value.content.map(encode(_)) }
+
+  def makeParams(params: Map[String, Param]): String =
+    makeParamsMap(params)
       .flatMap { case (key, values) => values.map(value => s"$key=$value") }
       .mkString("&")
 

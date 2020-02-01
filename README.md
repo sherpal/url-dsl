@@ -32,6 +32,16 @@ params.matchQueryString("age=22&drinks=orange+juice&drinks=water") should be(
 
 For more example usages, head over the tests.
 
+## Installation
+
+Add the following to your `build.sbt` (or wherever you add your dependencies):
+```scala
+libraryDependencies += "be.doeraene" %% "url-dsl" % "0.1.4"
+```
+or, for Scala.js,
+```scala
+libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.1.4"
+```
 
 ## The two important classes
 

@@ -1,9 +1,7 @@
 package urldsl.vocabulary
 
-import urldsl.language.PathSegment
-
 /**
-  * Returned type of matching segments against a [[PathSegment]].
+  * Returned type of matching segments against a [[urldsl.language.PathSegment]].
   *
   * This is used to avoid returning an ugly tuple.
   *
