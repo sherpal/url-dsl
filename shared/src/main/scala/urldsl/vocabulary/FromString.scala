@@ -41,5 +41,4 @@ object FromString extends FromStringWithNumeric {
       }
   )
 
-
 }
