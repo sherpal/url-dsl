@@ -4,7 +4,7 @@ import urldsl.errors.ErrorFromThrowable
 
 trait FromStringWithNumeric {
 
-    implicit def numericFromString[T, A](
+  implicit def numericFromString[T, A](
       implicit num: Numeric[T],
       fromThrowable: ErrorFromThrowable[A]
   ): FromString[T, A] = FromString.factory(
@@ -14,6 +14,5 @@ trait FromStringWithNumeric {
         case None    => Left(fromThrowable.fromThrowable(new Exception(s"$s is not numeric")))
       }
   )
-
 
 }
