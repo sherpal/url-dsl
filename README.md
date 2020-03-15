@@ -36,11 +36,11 @@ For more example usages, head over the tests.
 
 Add the following to your `build.sbt` (or wherever you add your dependencies):
 ```scala
-libraryDependencies += "be.doeraene" %% "url-dsl" % "0.1.4"
+libraryDependencies += "be.doeraene" %% "url-dsl" % "0.2.0"
 ```
 or, for Scala.js,
 ```scala
-libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.1.4"
+libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.2.0"
 ```
 
 ## The two important classes
