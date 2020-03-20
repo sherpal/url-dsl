@@ -159,6 +159,21 @@ trait PathSegment[T, A] {
     fromUToT.andThen(createSegments)
   )
 
+  /**
+    * Forgets the information contained in the path parameter by injecting one.
+    * This turn this "dynamic" [[PathSegment]] into a fix one.
+    */
+  final def provide(t: T)(implicit pathMatchingError: PathMatchingError[A], printer: Printer[T]): PathSegment[Unit, A] =
+    PathSegment.factory[Unit, A](
+      segments =>
+        for {
+          tMatch <- matchSegments(segments)
+          PathMatchOutput(tOutput, unusedSegments) = tMatch
+          unitMatched <- if (tOutput != t) Left(pathMatchingError.wrongValue(printer(t), printer(tOutput)))
+          else Right(PathMatchOutput((), unusedSegments))
+        } yield unitMatched,
+      (_: Unit) => createSegments(t)
+    )
 }
 
 object PathSegment {
