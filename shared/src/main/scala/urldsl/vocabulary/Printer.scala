@@ -1,5 +1,7 @@
 package urldsl.vocabulary
 
+import scala.language.`3.1`
+
 trait Printer[T] {
 
   def print(t: T): String
@@ -14,12 +16,26 @@ object Printer {
 
   def factory[T](printing: T => String): Printer[T] = (t: T) => printing(t)
 
-  implicit def stringPrinter: Printer[String] = factory(identity)
-  implicit def intPrinter: Printer[Int] = factory(_.toString)
-  implicit def longPrinter: Printer[Long] = factory(_.toString)
-  implicit def booleanPrinter: Printer[Boolean] = factory(_.toString)
-  implicit def doublePrinter: Printer[Double] = factory(_.toString)
-  implicit def bigIntPrinter: Printer[BigInt] = factory(_.toString)
-  implicit def floatPrinter: Printer[Float] = factory(_.toString)
+  given stringPrinter as Printer [String] {
+    def print(t: String): String = t
+  }
+  given intPrinter as Printer [Int] {
+    def print(t: Int): String = t.toString
+  }
+  given longPrinter as Printer [Long] {
+    def print(t: Long): String = t.toString
+  }
+  given booleanPrinter as Printer [Boolean] {
+    def print(t: Boolean): String = t.toString
+  }
+  given doublePrinter as Printer [Double] {
+    def print(t: Double): String = t.toString
+  }
+  given bigIntPrinter as Printer [BigInt] {
+    def print(t: BigInt): String = t.toString
+  }
+  given floatPrinter as Printer [Float] {
+    def print(t: Float): String = t.toString
+  }
 
 }

@@ -1,5 +1,8 @@
 package urldsl.language
 
+import scala.language.`3.1`
+
+
 import urldsl.errors.PathMatchingError
 import urldsl.vocabulary.{FromString, Printer}
 

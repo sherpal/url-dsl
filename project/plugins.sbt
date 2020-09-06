@@ -5,7 +5,8 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
 val scalaJSVersion =
-  Option(System.getenv("SCALAJS_VERSION")).getOrElse("1.0.1")
+  Option(System.getenv("SCALAJS_VERSION")).getOrElse("1.1.1")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % scalaJSVersion)
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.4.2")

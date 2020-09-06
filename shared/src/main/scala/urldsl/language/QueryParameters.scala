@@ -1,8 +1,13 @@
 package urldsl.language
 
+import scala.language.`3.1`
+
+
 import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
+
+import scala.annotation.alpha
 
 trait QueryParameters[Q, A] {
 
@@ -63,7 +68,7 @@ trait QueryParameters[Q, A] {
     * called, you can end up with "Q = (Int, String)" or "Q = (String, Int)". This property is called
     * "QuasiCommutativity" in the tests.
     */
-  final def &[R](that: QueryParameters[R, A])(implicit ev: Tupler[Q, R]): QueryParameters[ev.Out, A] =
+  @alpha("and") final def &[R](that: QueryParameters[R, A])(using ev: Tupler[Q, R]): QueryParameters[ev.Out, A] =
     factory[ev.Out, A](
       (params: Map[String, Param]) =>
         for {
@@ -83,7 +88,7 @@ trait QueryParameters[Q, A] {
     *
     * This should be used to represent (possibly) missing parameters.
     */
-  final def ? : QueryParameters[Option[Q], A] = factory[Option[Q], A](
+  @alpha("withQuery") final def ? : QueryParameters[Option[Q], A] = factory[Option[Q], A](
     (params: Map[String, Param]) =>
       matchParams(params) match {
         case Right(ParamMatchOutput(output, unused)) => Right(ParamMatchOutput(Some(output), unused))
@@ -122,9 +127,9 @@ trait QueryParameters[Q, A] {
     * Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
     * exception-free bijection between Q and R.
     */
-  final def as[R](implicit codec: Codec[Q, R]): QueryParameters[R, A] = factory(
-    (matchParams _).andThen(_.map(_.map(codec.leftToRight))),
-    (codec.rightToLeft _).andThen(createParams)
+  final def as[R](using codec: Codec[Q, R]): QueryParameters[R, A] = factory(
+    matchParams.andThen(_.map(_.map(codec.leftToRight))),
+    codec.rightToLeft andThen createParams
   )
 
 }

@@ -1,7 +1,12 @@
 package urldsl.language
 
+import scala.language.`3.1`
+
+
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
+
+import scala.annotation.alpha
 
 final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
     pathSegment: PathSegment[PathType, PathError],
@@ -72,7 +77,7 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
   ): String =
     pathSegment.createPath(path, generator) + "?" + queryParams.createParamsString(params, generator)
 
-  def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(
+  @alpha("and") def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(
       implicit
       ev: Tupler[ParamsType, OtherParamsType]
   ): PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError] =

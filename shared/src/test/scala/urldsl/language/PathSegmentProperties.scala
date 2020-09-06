@@ -1,9 +1,12 @@
 package urldsl.language
 
+import scala.language.`3.1`
+
+
 import org.scalacheck._
 import urldsl.errors.DummyError
-import urldsl.errors.DummyError.{dummyErrorIsPathMatchingError => e}
 import urldsl.vocabulary.{PathMatchOutput, Segment}
+import urldsl.errors.PathMatchingError
 
 import scala.util.Try
 
@@ -18,7 +21,7 @@ final class PathSegmentProperties extends Properties("PathSegment") {
   val nonIntSegmentGen: Gen[Segment] =
     segmentGen.map(_.content).map(s => Try(s.toInt).failed.map(_ => s).getOrElse("")).map(Segment(_))
 
-  property("RootConsumesNothing") = forAll(Gen.listOf[String](Gen.asciiStr)) { ls: List[String] =>
+  property("RootConsumesNothing") = forAll(Gen.listOf[String](Gen.asciiStr)) { (ls: List[String]) =>
     $.matchSegments(ls.map(Segment(_))) == Right(PathMatchOutput((), ls.map(Segment(_))))
   }
 
@@ -28,11 +31,11 @@ final class PathSegmentProperties extends Properties("PathSegment") {
     )
   }
 
-  property("remainingSegmentsAndEndOfSegments") = forAll(Gen.listOf[String](Gen.asciiStr)) { ls: List[String] =>
+  property("remainingSegmentsAndEndOfSegments") = forAll(Gen.listOf[String](Gen.asciiStr)) { (ls: List[String]) =>
     ($ / remainingSegments / endOfSegments).matchSegments(ls.map(Segment(_))) == Right(PathMatchOutput(ls, Nil))
   }
 
-  property("ExactMatchingString") = forAll(Gen.listOfN[String](5, Gen.asciiStr)) { ls: List[String] =>
+  property("ExactMatchingString") = forAll(Gen.listOfN[String](5, Gen.asciiStr)) { (ls: List[String]) =>
     ($ / ls.head / ls.tail.head).matchSegments(ls.map(Segment(_))) == Right(
       PathMatchOutput((), ls.tail.tail.map(Segment(_)))
     )
@@ -51,7 +54,7 @@ final class PathSegmentProperties extends Properties("PathSegment") {
       )
   }
 
-  property("IntSegmentMatcher") = forAll(Gen.listOf(Arbitrary.arbInt.arbitrary)) { ls: List[Int] =>
+  property("IntSegmentMatcher") = forAll(Gen.listOf(Arbitrary.arbInt.arbitrary)) { (ls: List[Int]) =>
     val segments = ls.map(_.toString).map(Segment(_))
     ls match {
       case Nil => true
@@ -79,15 +82,17 @@ final class PathSegmentProperties extends Properties("PathSegment") {
     }
   }
 
-  property("EndOfSegmentComplains") = forAll(Gen.nonEmptyListOf(segmentGen)) { ls: List[Segment] =>
-    ($ / endOfSegments).matchSegments(ls) == Left(e.endOfSegmentRequired(ls))
+  val error = summon[PathMatchingError[DummyError]]
+
+  property("EndOfSegmentComplains") = forAll(Gen.nonEmptyListOf(segmentGen)) { (ls: List[Segment]) =>
+    ($ / endOfSegments).matchSegments(ls) == Left(error.endOfSegmentRequired(ls))
   }
 
-  property("IntSegmentComplains") = forAll(Gen.nonEmptyListOf(nonIntSegmentGen)) { ls: List[Segment] =>
-    ($ / segment[Int]).matchSegments(ls) == Left(e.malformed(ls.head.content))
+  property("IntSegmentComplains") = forAll(Gen.nonEmptyListOf(nonIntSegmentGen)) { (ls: List[Segment]) =>
+    ($ / segment[Int]).matchSegments(ls) == Left(error.malformed(ls.head.content))
   }
 
-  property("oneOfValuesMatches") = forAll(Gen.nonEmptyListOf(segmentGen)) { ls: List[Segment] =>
+  property("oneOfValuesMatches") = forAll(Gen.nonEmptyListOf(segmentGen)) { (ls: List[Segment]) =>
     val path = $ / oneOf[String](ls.head.content, ls.tail.map(_.content): _*)
 
     ls.forall(s => path.matchSegments(List(s)).isRight)

@@ -1,5 +1,7 @@
 package urldsl.vocabulary
 
+import scala.language.`3.1`
+
 /**
   * Represents a bijection between `Left` and `Right`.
   *
@@ -10,9 +12,10 @@ trait Codec[Left, Right] {
   def leftToRight(left: Left): Right
   def rightToLeft(right: Right): Left
 
-  def ++[To](that: Codec[Right, To]): Codec[Left, To] = Codec.factory(
-    this.leftToRight _ andThen that.leftToRight,
-    that.rightToLeft _ andThen this.rightToLeft
+  @scala.annotation.alpha("++")
+  final def ++[To](that: Codec[Right, To]): Codec[Left, To] = Codec.factory(
+    this.leftToRight andThen that.leftToRight,
+    that.rightToLeft andThen this.rightToLeft
   )
 
 }
@@ -26,18 +29,23 @@ object Codec {
     def rightToLeft(right: U): T = uToT(right)
   }
 
-  implicit def composeCodecs[Left, Middle, Right](
-      implicit
-      leftCodec: Codec[Left, Middle],
-      rightCodec: Codec[Middle, Right]
-  ): Codec[Left, Right] = leftCodec ++ rightCodec
+  given composeCodecs [Left, Middle, Right] (using leftCodec: Codec[Left, Middle],
+  rightCodec: Codec[Middle, Right]) as Codec[Left, Right] {
+    val composition = leftCodec ++ rightCodec
 
-  implicit def liftCodec[Left, Right](implicit codec: Codec[Left, Right]): Codec[List[Left], List[Right]] =
-    factory(_.map(codec.leftToRight), _.map(codec.rightToLeft))
+    def leftToRight(left: Left): Right = composition.leftToRight(left)
+    def rightToLeft(right: Right): Left = composition.rightToLeft(right)
 
-  implicit def zipCodec[T, U]: Codec[(List[T], List[U]), List[(T, U)]] = factory(
-    { case (ls1, ls2) => ls1 zip ls2 },
-    _.unzip
-  )
+  }
+
+  given liftCodec [Left, Right] (using codec: Codec[Left, Right]) as Codec[List[Left], List[Right]] {
+    def leftToRight(left: List[Left]): List[Right] = left.map(codec.leftToRight)
+    def rightToLeft(right: List[Right]): List[Left] = right.map(codec.rightToLeft)
+  }
+
+  given zipCodec [T, U] as Codec [(List[T], List[U]), List[(T, U)]] {
+    def leftToRight(left: (List[T], List[U])): List[(T, U)] = left._1 zip left._2
+    def rightToLeft(right: List[(T, U)]): (List[T], List[U]) = right.unzip
+  }
 
 }

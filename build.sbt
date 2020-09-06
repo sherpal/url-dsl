@@ -1,6 +1,8 @@
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 import xerial.sbt.Sonatype._
 
+val dottyVersion = "0.27.0-RC1"
+
 val commonSettings = Def.settings(
   // publish to the sonatype repository
   publishTo := sonatypePublishTo.value
@@ -28,10 +30,10 @@ organization := "be.doeraene"
 
 inThisBuild(
   Def.settings(
-    version := "0.2.0",
-    crossScalaVersions := Seq("2.13.1", "2.12.10"),
+    version := "0.3.0",
+    crossScalaVersions := List(dottyVersion),
     scalaVersion := crossScalaVersions.value.head,
-    scalacOptions ++= Seq("-feature", "-deprecation")
+    scalacOptions ++= List("-feature", "-deprecation", "-Xfatal-warnings", "-source:3.0-migration")
   )
 )
 
@@ -46,13 +48,13 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
     description := "A tiny library for parsing and creating urls in a type-safe way",
     licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php")),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.1.1" % "test",
-      "org.scalacheck" %%% "scalacheck" % "1.14.3" % "test"
+      "org.scalatest" % "scalatest_2.13" % "3.1.1" % "test",
+      "org.scalacheck" % "scalacheck_2.13" % "1.14.3" % "test"
     )
   )
   .jsSettings(
     libraryDependencies ++= List(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+      //"org.scala-js" %%% "scalajs-dom" % "0.9.8"
     )
   )
 

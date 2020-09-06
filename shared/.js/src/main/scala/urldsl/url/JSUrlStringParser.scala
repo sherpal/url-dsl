@@ -1,12 +1,12 @@
 package urldsl.url
 
-import org.scalajs.dom.experimental.URL
+//import org.scalajs.dom.experimental.URL
 
 import scala.scalajs.js
 
 final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
-  private val urlParser = new URL(rawUrl)
+  private val urlParser = URL(rawUrl)
 
   def queryParametersString: String = urlParser.search
 

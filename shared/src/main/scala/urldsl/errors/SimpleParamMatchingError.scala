@@ -1,5 +1,8 @@
 package urldsl.errors
 
+import scala.language.`3.1`
+
+
 sealed trait SimpleParamMatchingError
 
 /**
@@ -10,10 +13,12 @@ object SimpleParamMatchingError {
   case class MissingParameterError(paramName: String) extends SimpleParamMatchingError
   case class FromThrowable(throwable: Throwable) extends SimpleParamMatchingError
 
-  implicit lazy val itIsParamMatchingError: ParamMatchingError[SimpleParamMatchingError] =
-    (paramName: String) => MissingParameterError(paramName)
+  given ParamMatchingError[SimpleParamMatchingError] {
+    def missingParameterError(paramName: String): MissingParameterError = MissingParameterError(paramName)
+  }
 
-  implicit lazy val simpleParamMatchingErrorIsFromThrowable: ErrorFromThrowable[SimpleParamMatchingError] =
-    (throwable: Throwable) => FromThrowable(throwable)
+  given ErrorFromThrowable[SimpleParamMatchingError] {
+    def fromThrowable(throwable: Throwable): FromThrowable = FromThrowable(throwable)
+  }
 
 }

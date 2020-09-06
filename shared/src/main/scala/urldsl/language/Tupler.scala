@@ -1,5 +1,8 @@
 package urldsl.language
 
+import scala.language.`3.1`
+
+
 /**
   *The following code has been stolen at
   * https://github.com/julienrf/endpoints/blob/7d0af49bc7a83b5985815d936201616ed8a3fa5d/json-schema/json-schema/src/main/scala/endpoints/Tupler.scala
@@ -74,7 +77,7 @@ object Tupler extends Tupler4
 trait Tupler1 {
   type Aux[A, B, Out0] = Tupler[A, B] { type Out = Out0 }
 
-  implicit def ab[A, B]: Aux[A, B, (A, B)] = new Tupler[A, B] {
+  given [A, B] as Tupler[A, B] {
     type Out = (A, B)
     def apply(a: A, b: B): (A, B) = (a, b)
     def unapply(out: (A, B)): (A, B) = out
@@ -157,7 +160,7 @@ trait Tupler4 extends Tupler3 {
         ((a, b, c, d), e)
       }
     }
-  
+
   implicit def rightUnit[A]: Aux[A, Unit, A] = new Tupler[A, Unit] {
     type Out = A
     def apply(a: A, b: Unit): A = a
