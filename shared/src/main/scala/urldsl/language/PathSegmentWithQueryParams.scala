@@ -70,7 +70,7 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
       params: ParamsType,
       generator: UrlStringGenerator = UrlStringGenerator.default
   ): String =
-    pathSegment.createPath(path, generator) + "?" + queryParams.createParamsString(params, generator)
+    pathSegment.createPath(path, generator) ++ "?" ++ queryParams.createParamsString(params, generator)
 
   def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(
       implicit
