@@ -12,4 +12,6 @@ final case class MaybeFragment(value: Option[String]) extends AnyVal {
 
   def isEmpty: Boolean = value.isEmpty
 
+  def nonEmpty: Boolean = value.nonEmpty
+
 }

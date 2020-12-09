@@ -55,11 +55,29 @@ final class FragmentProperties extends Properties("Fragment") {
       case Right(value) => Prop(false) :| s"This was supposed to not match but I got $value"
       case Left(error) =>
         Prop(fragment.value match {
-          case Some(value) => error.isInstanceOf[SimpleFragmentMatchingError.FromThrowable]
-          case None        => error == SimpleFragmentMatchingError.MissingFragmentError
+          case Some(_) => error.isInstanceOf[SimpleFragmentMatchingError.FromThrowable]
+          case None    => error == SimpleFragmentMatchingError.MissingFragmentError
         }) :| s"Correctly found out that it was an error but error was wrong, got: $error"
 
     }
+  }
+
+  property("Mapping string results to its length works") = forAll(fragmentGen) { fragment =>
+    val stringLengthFragment = stringFragment.as((_: String).length, (_: Int).toString)
+
+    Prop(fragment.nonEmpty) ==> Prop(
+      stringLengthFragment.matchFragment(fragment) == Right(fragment.value.get.length)
+    )
+  }
+
+  property("Matching is the left inverse for generating in string fragment") = forAll(Gen.asciiStr) {
+    (fragment: String) =>
+      stringFragment.matchFragment(stringFragment.createFragment(fragment)) == Right(fragment)
+  }
+
+  property("Matching is the left inverse for generating in int fragment") = forAll(Gen.chooseNum(-1000, 1000)) {
+    (fragment: Int) =>
+      intFragment.matchFragment(intFragment.createFragment(fragment)) == Right(fragment)
   }
 
 }
