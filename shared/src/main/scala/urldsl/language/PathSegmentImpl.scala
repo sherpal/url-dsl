@@ -11,12 +11,14 @@ import urldsl.vocabulary.{FromString, Printer}
   * conveniently invoked using the `segment` method below.
   *
   * @example
+  *   {{{
   *          val pathSegmentImpl = PathSegmentImpl[DummyError]
   *          import pathSegmentImpl._
   *
   *          root / "hello"  // this is of type PathSegment[Unit, DummyError] thanks to the import above.
   *           (note that in this case there is already a PathSegmentImpl for [[urldsl.errors.DummyError]] in the
   *           [[PathSegment]] companion object)
+  *   }}}
   *
   * @param error implementation of [[urldsl.errors.PathMatchingError]] for type A.
   * @tparam A type of error.

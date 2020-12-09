@@ -36,6 +36,7 @@ object DummyError {
     new FragmentMatchingError[DummyError] {
       def missingFragmentError: DummyError = dummyError
       def wrongValue[T](actual: T, expected: T): DummyError = dummyError
+      def fragmentWasPresent(value: String): DummyError = dummyError
     }
 
   implicit final lazy val dummyErrorIsFromThrowable: ErrorFromThrowable[DummyError] = (_: Throwable) => dummyError

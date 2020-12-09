@@ -1,6 +1,6 @@
 package urldsl.language
 
-import urldsl.errors.FragmentMatchingError
+import urldsl.errors.{DummyError, FragmentMatchingError, SimpleFragmentMatchingError}
 import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary.{Codec, FromString, MaybeFragment, Printer}
 
@@ -113,6 +113,15 @@ object Fragment {
     (maybeT: Option[T]) => MaybeFragment(maybeT.map(printer.apply))
   )
 
+  /** Imposes that the URL does not contain a Fragment. */
+  final def empty[A](implicit fragmentMatchingError: FragmentMatchingError[A]): Fragment[Unit, A] = factory[Unit, A](
+    {
+      case MaybeFragment(None)           => Right(())
+      case MaybeFragment(Some(fragment)) => Left(fragmentMatchingError.fragmentWasPresent(fragment))
+    },
+    (_: Unit) => MaybeFragment(None)
+  )
+
   implicit def asFragment[T, A](t: T)(
       implicit fromString: FromString[T, A],
       printer: Printer[T],
@@ -130,5 +139,9 @@ object Fragment {
     },
     (printer.apply _).andThen(Some(_)).andThen(MaybeFragment)
   )
+
+  lazy val dummyErrorImpl: FragmentImpl[DummyError] = FragmentImpl[DummyError]
+  lazy val simpleFragmentErrorImpl: FragmentImpl[SimpleFragmentMatchingError] =
+    FragmentImpl[SimpleFragmentMatchingError]
 
 }

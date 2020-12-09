@@ -26,7 +26,8 @@ trait UrlStringGenerator {
   }
 
   final def makeFragment(maybeFragment: MaybeFragment): String = maybeFragment.value match {
-    case Some(value) => "#" ++ value
+    case Some("")    => ""
+    case Some(value) => "#" ++ encode(value)
     case None        => ""
   }
 
