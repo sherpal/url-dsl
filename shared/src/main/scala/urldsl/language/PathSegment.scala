@@ -1,7 +1,7 @@
 package urldsl.language
 
 import urldsl.errors.{DummyError, ErrorFromThrowable, PathMatchingError, SimplePathMatchingError}
-import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
+import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
 import scala.language.implicitConversions
@@ -11,7 +11,7 @@ import scala.language.implicitConversions
   * @tparam T type represented by this PathSegment
   * @tparam A type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait PathSegment[T, A] {
+trait PathSegment[T, A] extends UrlPart[T, A] {
 
   /**
     * Tries to match the list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`.
@@ -80,6 +80,8 @@ trait PathSegment[T, A] {
     createPath(())
   final def createPath(encoder: UrlStringGenerator)(implicit ev: Unit =:= T): String =
     createPath((), encoder)
+
+  final def createPart(t: T, encoder: UrlStringGenerator): String = createPath(t, encoder)
 
   /**
     * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Tupler]]

@@ -4,7 +4,7 @@ import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-trait QueryParameters[Q, A] {
+trait QueryParameters[Q, A] extends UrlPart[Q, A] {
 
   import QueryParameters._
 
@@ -54,6 +54,9 @@ trait QueryParameters[Q, A] {
     */
   final def createParamsString(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makeParams(createParams(q))
+
+  final def createPart(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
+    createParamsString(q, encoder)
 
   /**
     * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[urldsl.language.Tupler]]

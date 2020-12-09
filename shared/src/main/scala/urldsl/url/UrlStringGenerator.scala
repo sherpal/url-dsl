@@ -32,4 +32,8 @@ trait UrlStringGenerator {
 
 }
 
-object UrlStringGenerator extends DefaultUrlStringGenerator
+object UrlStringGenerator extends DefaultUrlStringGenerator {
+
+  val default: UrlStringGenerator = default0
+
+}

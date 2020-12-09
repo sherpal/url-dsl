@@ -1,10 +1,11 @@
 package urldsl.language
 
 import urldsl.errors.FragmentMatchingError
-import urldsl.url.UrlStringGenerator
+import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary.{Codec, FromString, MaybeFragment, Printer}
 
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 
 /**
   * Represents the fragment (or ref) of an URL, containing an information of type T, or an error of type E.
@@ -12,7 +13,7 @@ import scala.language.implicitConversions
   * @tparam T type represented by this PathSegment
   * @tparam E type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait Fragment[T, E] {
+trait Fragment[T, E] extends UrlPart[T, E] {
 
   import Fragment.factory
 
@@ -24,16 +25,25 @@ trait Fragment[T, E] {
     */
   def matchFragment(maybeFragment: MaybeFragment): Either[E, T]
 
+  def matchRawUrl(url: String, urlStringParserGenerator: UrlStringParserGenerator): Either[E, T] =
+    matchFragment(MaybeFragment(urlStringParserGenerator.parser(url).maybeFragment))
+
   /**
     * Creates a fragment information from an instance of T.
     */
   def createFragment(t: T): MaybeFragment
 
+  /** Creates the Fragment string contained in the given instance of T. */
   def fragmentString(t: T, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makeFragment(createFragment(t))
 
+  /** Sugar when {{{T =:= Unit}}}. */
   def fragmentString()(implicit ev: Unit =:= T): String = fragmentString(())
 
+  def createPart(t: T, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
+    fragmentString(t, encoder)
+
+  /** By-map this fragment into a type U. */
   def as[U](tToU: T => U, uToT: U => T): Fragment[U, E] = factory(
     fragment => matchFragment(fragment).map(tToU),
     (u: U) => createFragment(uToT(u))
@@ -103,17 +113,18 @@ object Fragment {
     (maybeT: Option[T]) => MaybeFragment(maybeT.map(printer.apply))
   )
 
-  implicit def fragmentFromExactValue[T, A](t: T)(
+  implicit def asFragment[T, A](t: T)(
       implicit fromString: FromString[T, A],
       printer: Printer[T],
-      fragmentMatchingError: FragmentMatchingError[A]
+      fragmentMatchingError: FragmentMatchingError[A],
+      classTag: ClassTag[T]
   ): Fragment[T, A] = factory[T, A](
     {
       case MaybeFragment(None) => Left(fragmentMatchingError.missingFragmentError)
       case MaybeFragment(Some(fragment)) =>
         fromString(fragment) match {
           case Left(value)  => Left(value)
-          case Right(t)     => Right(t)
+          case Right(t: T)  => Right(t)
           case Right(value) => Left(fragmentMatchingError.wrongValue(value, t))
         }
     },

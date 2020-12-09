@@ -2,7 +2,7 @@ package urldsl.url
 
 trait DefaultUrlStringGenerator {
 
-  val default: UrlStringGenerator = (str: String, encoding: String) =>
+  protected val default0: UrlStringGenerator = (str: String, encoding: String) =>
     java.net.URLEncoder
       .encode(str, encoding)
       .replaceAll("\\+", "%20")
