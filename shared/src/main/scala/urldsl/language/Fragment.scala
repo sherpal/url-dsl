@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
   * @tparam T type represented by this PathSegment
   * @tparam E type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait Fragment[T, E] extends UrlPart[T, E] {
+trait Fragment[T, +E] extends UrlPart[T, E] {
 
   import Fragment.factory
 
@@ -66,6 +66,43 @@ trait Fragment[T, E] extends UrlPart[T, E] {
       case None    => MaybeFragment(None)
     }
   )
+
+  /**
+    * Adds an extra satisfying criteria to the de-serialized output of this [[Fragment]].
+    * When the output of this [[Fragment]] does not satisfy the given predicate, the given error is returned
+    * instead.
+    *
+    * @param predicate criteria that the output has to verify
+    * @param error error happening when it's not the case
+    * @tparam E1 new type of the error
+    * @return a new [[Fragment]] matching the same fragment information, but only when the predicate is satisfied
+    */
+  final def filter[E1 >: E](predicate: T => Boolean, error: MaybeFragment => E1): Fragment[T, E1] =
+    Fragment.factory[T, E1](
+      (maybeFragment: MaybeFragment) => matchFragment(maybeFragment).filterOrElse(predicate, error(maybeFragment)),
+      createFragment
+    )
+
+  /** Sugar when `T =:= DummyError`. */
+  final def filter(predicate: T => Boolean)(implicit ev: E <:< DummyError): Fragment[T, DummyError] = {
+    type F[+E1] = Fragment[T, E1]
+    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+  }
+
+  /**
+    * Returns a [[Fragment]] which outputs the contents of this [[Fragment]] when result is a [[Some]] and the
+    * specified `default` value otherwise.
+    * When generating the path, it will only generate paths corresponding to the [[Some]] case.
+    *
+    * @note This method is only available when `T =:= Option[U]`.
+    *
+    * @param default default value when output is empty
+    */
+  final def getOrElse[U](default: => U)(implicit ev: T =:= Option[U]): Fragment[U, E] =
+    factory[U, E](
+      (maybeFragment: MaybeFragment) => matchFragment(maybeFragment).map(ev(_).getOrElse(default)),
+      (u: U) => createFragment(ev.flip(Some(u)))
+    )
 
 }
 

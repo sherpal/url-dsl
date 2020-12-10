@@ -1,7 +1,9 @@
 package urldsl.language
 
 import urldsl.errors.PathMatchingError
-import urldsl.vocabulary.{FromString, Printer}
+import urldsl.vocabulary.{FromString, Printer, Segment}
+
+import scala.language.implicitConversions
 
 /**
   * Using the pre-defined path segments in [[PathSegment]] can be cumbersome if you have to constantly specify the error
@@ -35,6 +37,21 @@ final class PathSegmentImpl[A](implicit error: PathMatchingError[A]) {
 
   def oneOf[T](t: T, ts: T*)(implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[Unit, A] =
     PathSegment.oneOf(t, ts: _*)
+
+  /* I think this should not be necessary but the compiler has difficulties finding the correct error due to covariance */
+  implicit def unaryPathSegment[T](
+      t: T
+  )(
+      implicit fromString: FromString[T, A],
+      printer: Printer[T]
+  ): PathSegment[Unit, A] =
+    PathSegment.simplePathSegment(
+      s =>
+        fromString(s.content)
+          .filterOrElse[A](_ == t, error.wrongValue(printer(t), s.content))
+          .map(_ => ()),
+      (_: Unit) => Segment(printer(t))
+    )
 
 }
 

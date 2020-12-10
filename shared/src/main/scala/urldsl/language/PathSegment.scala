@@ -207,9 +207,9 @@ object PathSegment {
   }
 
   /** Simple path segment that matches everything by passing segments down the line. */
-  final def empty[A]: PathSegment[Unit, A] =
-    factory[Unit, A](segments => Right(PathMatchOutput((), segments)), _ => Nil)
-  final def root[A]: PathSegment[Unit, A] = empty
+  final def empty: PathSegment[Unit, Nothing] =
+    factory[Unit, Nothing](segments => Right(PathMatchOutput((), segments)), _ => Nil)
+  final def root: PathSegment[Unit, Nothing] = empty
 
   /** Simple path segment that matches nothing. This is the neutral of the || operator. */
   final def noMatch[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] =

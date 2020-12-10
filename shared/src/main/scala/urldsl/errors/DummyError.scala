@@ -8,7 +8,7 @@ sealed trait DummyError
 
 object DummyError {
 
-  final val dummyError: DummyError = new DummyError {}
+  object dummyError extends DummyError
 
   implicit final lazy val dummyErrorIsParamMatchingError: ParamMatchingError[DummyError] =
     new ParamMatchingError[DummyError] {

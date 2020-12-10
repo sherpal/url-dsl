@@ -11,7 +11,7 @@ import urldsl.vocabulary.{
   Segment
 }
 
-final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, ParamsError, FragmentType, FragmentError] private[language] (
+final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError, FragmentType, +FragmentError] private[language] (
     pathSegment: PathSegment[PathType, PathError],
     queryParams: QueryParameters[ParamsType, ParamsError],
     fragment: Fragment[FragmentType, FragmentError]

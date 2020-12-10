@@ -3,7 +3,7 @@ package urldsl.language
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, ParamsError] private[language] (
+final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +ParamsError] private[language] (
     pathSegment: PathSegment[PathType, PathError],
     queryParams: QueryParameters[ParamsType, ParamsError]
 ) extends UrlPart[UrlMatching[PathType, ParamsType], Either[PathError, ParamsError]] {
@@ -72,14 +72,14 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, ParamsE
   ): String =
     pathSegment.createPath(path, generator) ++ "?" ++ queryParams.createParamsString(params, generator)
 
-  def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(
+  def &[OtherParamsType, ParamsError1 >: ParamsError](otherParams: QueryParameters[OtherParamsType, ParamsError1])(
       implicit
       ev: Tupler[ParamsType, OtherParamsType]
-  ): PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError] =
-    new PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError](
+  ): PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError1] =
+    new PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError1](
       pathSegment,
       (queryParams & otherParams)
-        .asInstanceOf[QueryParameters[ev.Out, ParamsError]] // not necessary but IntelliJ complains.
+        .asInstanceOf[QueryParameters[ev.Out, ParamsError1]] // not necessary but IntelliJ complains.
     )
 
   def withFragment[FragmentType, FragmentError](
