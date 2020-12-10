@@ -166,6 +166,15 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   )
 
   /**
+    * Matches using this [[PathSegment]], and then forgets its content.
+    * Uses the `default` value when creating the path to go back.
+    */
+  final def ignore(default: => T): PathSegment[Unit, A] = PathSegment.factory[Unit, A](
+    matchSegments(_).map(_.map(_ => ())),
+    (_: Unit) => createSegments(default)
+  )
+
+  /**
     * Forgets the information contained in the path parameter by injecting one.
     * This turn this "dynamic" [[PathSegment]] into a fix one.
     */

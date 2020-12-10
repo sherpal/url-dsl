@@ -144,7 +144,7 @@ object QueryParameters {
     def createParams(q: Q): Map[String, Param] = creating(q)
   }
 
-  final def empty[A](implicit paramMatchingError: ParamMatchingError[A]): QueryParameters[Unit, A] = factory[Unit, A](
+  final def empty: QueryParameters[Unit, Nothing] = factory[Unit, Nothing](
     (params: Map[String, Param]) => Right(ParamMatchOutput((), params)),
     _ => Map()
   )

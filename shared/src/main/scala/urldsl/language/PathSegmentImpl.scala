@@ -22,15 +22,17 @@ import scala.language.implicitConversions
   *           [[PathSegment]] companion object)
   *   }}}
   *
-  * @param error implementation of [[urldsl.errors.PathMatchingError]] for type A.
   * @tparam A type of error.
   */
-final class PathSegmentImpl[A](implicit error: PathMatchingError[A]) {
+trait PathSegmentImpl[A] {
+
+  /** implementation of [[urldsl.errors.PathMatchingError]] for type A. */
+  implicit protected val pathError: PathMatchingError[A]
 
   val root: PathSegment[Unit, A] = PathSegment.root
   val remainingSegments: PathSegment[List[String], A] = PathSegment.remainingSegments
-  val endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
-  val noMatch: PathSegment[Unit, A] = PathSegment.noMatch[A]
+  lazy val endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
+  lazy val noMatch: PathSegment[Unit, A] = PathSegment.noMatch[A]
 
   def segment[T](implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[T, A] =
     PathSegment.segment[T, A]
@@ -48,7 +50,7 @@ final class PathSegmentImpl[A](implicit error: PathMatchingError[A]) {
     PathSegment.simplePathSegment(
       s =>
         fromString(s.content)
-          .filterOrElse[A](_ == t, error.wrongValue(printer(t), s.content))
+          .filterOrElse[A](_ == t, pathError.wrongValue(printer(t), s.content))
           .map(_ => ()),
       (_: Unit) => Segment(printer(t))
     )
@@ -58,6 +60,8 @@ final class PathSegmentImpl[A](implicit error: PathMatchingError[A]) {
 object PathSegmentImpl {
 
   /** Invoker. */
-  def apply[A](implicit error: PathMatchingError[A]): PathSegmentImpl[A] = new PathSegmentImpl[A]
+  def apply[A](implicit error: PathMatchingError[A]): PathSegmentImpl[A] = new PathSegmentImpl[A] {
+    implicit protected val pathError: PathMatchingError[A] = error
+  }
 
 }
