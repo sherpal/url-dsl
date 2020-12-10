@@ -192,8 +192,17 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
       (_: Unit) => createSegments(t)
     )
 
-//  final def withFragment[FragmentType, FragmentError](fragment: Fragment[FragmentType, FragmentError]) =
-//    new PathQueryFragmentRepr(this, QueryParameters.empty[Unit, Nothing])
+  /**
+    * Associates this [[PathSegment]] with the given [[Fragment]] in order to match raw urls satisfying both
+    * conditions, and returning the outputs from both.
+    *
+    * The query part of the url will be *ignored* (and will return Unit).
+    */
+  final def withFragment[FragmentType, FragmentError](
+      fragment: Fragment[FragmentType, FragmentError]
+  ): PathQueryFragmentRepr[T, A, Unit, Nothing, FragmentType, FragmentError] =
+    new PathQueryFragmentRepr(this, QueryParameters.ignore, fragment)
+
 }
 
 object PathSegment {

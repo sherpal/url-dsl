@@ -2,7 +2,8 @@ package urldsl.language
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import urldsl.vocabulary.UrlMatching
+import urldsl.errors.SimplePathMatchingError
+import urldsl.vocabulary.{PathQueryFragmentMatching, UrlMatching}
 
 /** Simple specs to test whether everything combines nicely. */
 //noinspection TypeAnnotation
@@ -34,6 +35,32 @@ final class AllImplSpec extends AnyFlatSpec with Matchers {
 
   }
 
-  "Associating path and fragment" should "be the same as path and fragment separately" in {}
+  "Associating path and fragment" should "be the same as path and fragment separately" in {
+    path.withFragment(ref).matchRawUrl(sampleUrl) should be(for {
+      p <- path.matchRawUrl(sampleUrl)
+      f <- ref.matchRawUrl(sampleUrl)
+    } yield PathQueryFragmentMatching(p, (), f))
+  }
+
+  "Associating path, query and fragment" should "be the same as the three separately" in {
+
+    (path ? query).withFragment(ref).matchRawUrl(sampleUrl) should be(for {
+      p <- path.matchRawUrl(sampleUrl)
+      q <- query.matchRawUrl(sampleUrl)
+      f <- ref.matchRawUrl(sampleUrl)
+    } yield PathQueryFragmentMatching(p, q, f))
+
+  }
+
+  def askForPath[T](pathSegment: PathSegment[T, SimplePathMatchingError]): PathSegment[T, SimplePathMatchingError] =
+    pathSegment
+
+  "Implicit conversion" should "be called with the specified error system" in {
+
+    askForPath("hey").matchRawUrl(sampleUrl).isRight should be(true)
+
+    (anySegment / anySegment / askForPath(23)).matchRawUrl(sampleUrl) should be(Right(()))
+
+  }
 
 }

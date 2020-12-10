@@ -149,6 +149,9 @@ object QueryParameters {
     _ => Map()
   )
 
+  /** Alias for empty which seems to better reflect the semantic. */
+  final def ignore: QueryParameters[Unit, Nothing] = empty
+
   final def simpleQueryParam[Q, A](
       paramName: String,
       matching: Param => Either[A, Q],

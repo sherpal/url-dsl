@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.DummyError
 import urldsl.language.QueryParameters.dummyErrorImpl._
-import urldsl.language.QueryParameters.dummyErrorImpl.{empty => root}
+import urldsl.language.QueryParameters.dummyErrorImpl.{ignore => root}
 import urldsl.vocabulary.Codec
 
 final class QueryParamsUrlSpec extends AnyFlatSpec with Matchers {
