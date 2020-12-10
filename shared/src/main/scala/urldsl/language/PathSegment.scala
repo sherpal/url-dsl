@@ -11,7 +11,7 @@ import scala.language.implicitConversions
   * @tparam T type represented by this PathSegment
   * @tparam A type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait PathSegment[T, A] extends UrlPart[T, A] {
+trait PathSegment[T, +A] extends UrlPart[T, A] {
 
   /**
     * Tries to match the list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`.
@@ -87,8 +87,8 @@ trait PathSegment[T, A] extends UrlPart[T, A] {
     * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Tupler]]
     * rules.
     */
-  final def /[U](that: PathSegment[U, A])(implicit ev: Tupler[T, U]): PathSegment[ev.Out, A] =
-    PathSegment.factory[ev.Out, A](
+  final def /[U, A1 >: A](that: PathSegment[U, A1])(implicit ev: Tupler[T, U]): PathSegment[ev.Out, A1] =
+    PathSegment.factory[ev.Out, A1](
       (segments: List[Segment]) =>
         for {
           firstOut <- this.matchSegments(segments)
@@ -121,30 +121,34 @@ trait PathSegment[T, A] extends UrlPart[T, A] {
     * - in a multi-part segment, ensure consistency between the different component (e.g., a range of two integers that
     *   should not be too large...)
     */
-  final def filter(predicate: T => Boolean, error: List[Segment] => A): PathSegment[T, A] = PathSegment.factory[T, A](
-    (segments: List[Segment]) =>
-      matchSegments(segments)
-        .filterOrElse(((_: PathMatchOutput[T]).output).andThen(predicate), error(segments)),
-    createSegments
-  )
+  final def filter[A1 >: A](predicate: T => Boolean, error: List[Segment] => A1): PathSegment[T, A1] =
+    PathSegment.factory[T, A1](
+      (segments: List[Segment]) =>
+        matchSegments(segments)
+          .filterOrElse(((_: PathMatchOutput[T]).output).andThen(predicate), error(segments)),
+      createSegments
+    )
 
   /** Sugar for when `A =:= DummyError` */
-  final def filter(predicate: T => Boolean)(implicit ev: DummyError =:= A): PathSegment[T, A] =
-    filter(predicate, _ => ev(DummyError.dummyError))
+  final def filter(predicate: T => Boolean)(implicit ev: A <:< DummyError): PathSegment[T, DummyError] = {
+    type F[+E] = PathSegment[T, E]
+    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+  }
 
   /**
     * Builds a [[PathSegment]] that first tries to match with this one, then tries to match with `that` one.
     * If both fail, the error of the second is returned (todo[behaviour]: should that change?)
     */
-  final def ||[U](that: PathSegment[U, A]): PathSegment[Either[T, U], A] = PathSegment.factory[Either[T, U], A](
-    segments =>
-      this.matchSegments(segments) match {
-        case Right(output) => Right(PathMatchOutput(Left(output.output), output.unusedSegments))
-        case Left(_) =>
-          that.matchSegments(segments).map(output => PathMatchOutput(Right(output.output), output.unusedSegments))
-      },
-    _.fold(this.createSegments, that.createSegments)
-  )
+  final def ||[U, A1 >: A](that: PathSegment[U, A1]): PathSegment[Either[T, U], A1] =
+    PathSegment.factory[Either[T, U], A1](
+      segments =>
+        this.matchSegments(segments) match {
+          case Right(output) => Right(PathMatchOutput(Left(output.output), output.unusedSegments))
+          case Left(_) =>
+            that.matchSegments(segments).map(output => PathMatchOutput(Right(output.output), output.unusedSegments))
+        },
+      _.fold(this.createSegments, that.createSegments)
+    )
 
   /**
     * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
@@ -165,8 +169,10 @@ trait PathSegment[T, A] extends UrlPart[T, A] {
     * Forgets the information contained in the path parameter by injecting one.
     * This turn this "dynamic" [[PathSegment]] into a fix one.
     */
-  final def provide(t: T)(implicit pathMatchingError: PathMatchingError[A], printer: Printer[T]): PathSegment[Unit, A] =
-    PathSegment.factory[Unit, A](
+  final def provide[A1 >: A](
+      t: T
+  )(implicit pathMatchingError: PathMatchingError[A1], printer: Printer[T]): PathSegment[Unit, A1] =
+    PathSegment.factory[Unit, A1](
       segments =>
         for {
           tMatch <- matchSegments(segments)
@@ -176,6 +182,9 @@ trait PathSegment[T, A] extends UrlPart[T, A] {
         } yield unitMatched,
       (_: Unit) => createSegments(t)
     )
+
+//  final def withFragment[FragmentType, FragmentError](fragment: Fragment[FragmentType, FragmentError]) =
+//    new PathQueryFragmentRepr(this, QueryParameters.empty[Unit, Nothing])
 }
 
 object PathSegment {

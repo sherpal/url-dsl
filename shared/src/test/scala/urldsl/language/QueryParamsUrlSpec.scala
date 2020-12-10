@@ -7,7 +7,7 @@ import urldsl.language.QueryParameters.dummyErrorImpl._
 import urldsl.language.QueryParameters.dummyErrorImpl.{empty => root}
 import urldsl.vocabulary.Codec
 
-final class QueryParamsRawUrlSpec extends AnyFlatSpec with Matchers {
+final class QueryParamsUrlSpec extends AnyFlatSpec with Matchers {
 
   private implicit class QueryParamsEnhanced[Q](qp: QueryParameters[Q, DummyError]) {
     def params(q: Q): String = qp.createParamsString(q)

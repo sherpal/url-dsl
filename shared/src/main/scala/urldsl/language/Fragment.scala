@@ -33,7 +33,7 @@ trait Fragment[T, E] extends UrlPart[T, E] {
     */
   def createFragment(t: T): MaybeFragment
 
-  /** Creates the Fragment string contained in the given instance of T. */
+  /** Creates the Fragment string contained in the given instance of T. Automatically prepend # if non empty. */
   def fragmentString(t: T, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makeFragment(createFragment(t))
 

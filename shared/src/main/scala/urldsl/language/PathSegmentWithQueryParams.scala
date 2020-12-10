@@ -3,7 +3,7 @@ package urldsl.language
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
+final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, ParamsError] private[language] (
     pathSegment: PathSegment[PathType, PathError],
     queryParams: QueryParameters[ParamsType, ParamsError]
 ) extends UrlPart[UrlMatching[PathType, ParamsType], Either[PathError, ParamsError]] {
@@ -81,6 +81,11 @@ final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsEr
       (queryParams & otherParams)
         .asInstanceOf[QueryParameters[ev.Out, ParamsError]] // not necessary but IntelliJ complains.
     )
+
+  def withFragment[FragmentType, FragmentError](
+      fragment: Fragment[FragmentType, FragmentError]
+  ): PathQueryFragmentRepr[PathType, PathError, ParamsType, ParamsError, FragmentType, FragmentError] =
+    new PathQueryFragmentRepr(pathSegment, queryParams, fragment)
 
   def createPart(t: UrlMatching[PathType, ParamsType], encoder: UrlStringGenerator): String =
     createUrlString(t.path, t.params, encoder)

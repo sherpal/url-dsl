@@ -1,6 +1,6 @@
 package urldsl.url
 
-import urldsl.vocabulary.{Param, Segment}
+import urldsl.vocabulary.{MaybeFragment, Param, Segment}
 
 trait UrlStringParser extends UrlStringDecoder {
 
@@ -20,5 +20,6 @@ trait UrlStringParser extends UrlStringDecoder {
 
   final def segments: List[Segment] = decodePath(path)
   final def params: Map[String, Param] = decodeParams(queryParametersString)
+  final def maybeFragmentObj: MaybeFragment = MaybeFragment(maybeFragment)
 
 }

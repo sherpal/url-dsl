@@ -10,7 +10,7 @@ import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
   * A [[UrlPart]] is also able to generate its corresponding part of the URL by ingesting an element of type T. When
   * doing that, it outputs a String (whose semantic may vary depending on the type of [[UrlPart]] you are dealing with).
   */
-trait UrlPart[T, E] {
+trait UrlPart[T, +E] {
 
   def matchRawUrl(
       url: String,
