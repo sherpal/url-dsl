@@ -164,17 +164,17 @@ object Fragment {
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A],
       classTag: ClassTag[T]
-  ): Fragment[T, A] = factory[T, A](
+  ): Fragment[Unit, A] = factory[Unit, A](
     {
       case MaybeFragment(None) => Left(fragmentMatchingError.missingFragmentError)
       case MaybeFragment(Some(fragment)) =>
         fromString(fragment) match {
           case Left(value)  => Left(value)
-          case Right(t: T)  => Right(t)
+          case Right(_: T)  => Right(())
           case Right(value) => Left(fragmentMatchingError.wrongValue(value, t))
         }
     },
-    (printer.apply _).andThen(Some(_)).andThen(MaybeFragment)
+    _ => MaybeFragment(Some(printer.print(t)))
   )
 
   lazy val dummyErrorImpl: FragmentImpl[DummyError] = FragmentImpl[DummyError]
