@@ -132,6 +132,17 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     (codec.rightToLeft _).andThen(createParams)
   )
 
+  /**
+    * Associates this [[QueryParameters]] with the given [[Fragment]] in order to match raw urls satisfying both
+    * conditions, and returning the outputs from both.
+    *
+    * The path part of the url will be *ignored* (and will return Unit).
+    */
+  final def withFragment[FragmentType, FragmentError](
+      fragment: Fragment[FragmentType, FragmentError]
+  ): PathQueryFragmentRepr[Unit, Nothing, Q, A, FragmentType, FragmentError] =
+    new PathQueryFragmentRepr(PathSegment.root, this, fragment)
+
 }
 
 object QueryParameters {
