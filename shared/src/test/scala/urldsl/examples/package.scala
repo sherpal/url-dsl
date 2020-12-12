@@ -11,4 +11,6 @@ package urldsl
   */
 package object examples {
   val sampleUrl = "http://www.some-domain.be/foo/23/true?bar=stuff&babar=other%20stuff&other=2&other=3&ok=true#the-ref"
+  val sampleUrlWithoutFragment =
+    "http://www.some-domain.be/foo/23/true?bar=stuff&babar=other%20stuff&other=2&other=3&ok=true"
 }
