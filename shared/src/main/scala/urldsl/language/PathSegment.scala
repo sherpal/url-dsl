@@ -131,8 +131,10 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
 
   /** Sugar for when `A =:= DummyError` */
   final def filter(predicate: T => Boolean)(implicit ev: A <:< DummyError): PathSegment[T, DummyError] = {
-    type F[+E] = PathSegment[T, E]
-    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+//    type F[+E] = PathSegment[T, E]
+//    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+    // we keep the ugliness below while supporting 2.12 todo[scala3] remove this
+    this.asInstanceOf[PathSegment[T, DummyError]].filter(predicate, _ => DummyError.dummyError)
   }
 
   /**

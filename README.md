@@ -35,11 +35,11 @@ For more example usages, head over the tests, and in particular in the `urldsl.e
 
 Add the following to your `build.sbt` (or wherever you add your dependencies):
 ```scala
-libraryDependencies += "be.doeraene" %% "url-dsl" % "0.3.0"
+libraryDependencies += "be.doeraene" %% "url-dsl" % "0.3.1"
 ```
 or, for Scala.js,
 ```scala
-libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.3.0"
+libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.3.1"
 ```
 
 ## The biggest abstraction

@@ -119,8 +119,10 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
 
   /** Sugar for when `A =:= DummyError`. */
   final def filter(predicate: Q => Boolean)(implicit ev: A <:< DummyError): QueryParameters[Q, DummyError] = {
-    type F[+E] = QueryParameters[Q, E]
-    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+    // type F[+E] = QueryParameters[Q, E]
+    // ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+    // we keep this ugliness below while supportinig scala 2.12 todo[scala3] remove
+    this.asInstanceOf[QueryParameters[Q, DummyError]].filter(predicate, _ => DummyError.dummyError)
   }
 
   /**

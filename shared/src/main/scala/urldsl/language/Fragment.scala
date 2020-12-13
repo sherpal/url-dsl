@@ -85,8 +85,10 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
 
   /** Sugar when `T =:= DummyError`. */
   final def filter(predicate: T => Boolean)(implicit ev: E <:< DummyError): Fragment[T, DummyError] = {
-    type F[+E1] = Fragment[T, E1]
-    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+    // type F[+E1] = Fragment[T, E1]
+    // ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+    // we keep this ugliness below while supporting 2.12 todo[scala3] remove this
+    this.asInstanceOf[Fragment[T, DummyError]].filter(predicate, _ => DummyError.dummyError)
   }
 
   /**
@@ -101,7 +103,9 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
   final def getOrElse[U](default: => U)(implicit ev: T =:= Option[U]): Fragment[U, E] =
     factory[U, E](
       (maybeFragment: MaybeFragment) => matchFragment(maybeFragment).map(ev(_).getOrElse(default)),
-      (u: U) => createFragment(ev.flip(Some(u)))
+      //(u: U) => createFragment(ev.flip(Some(u)))
+      // we keep the ugliness below while supporting 2.12 todo[scala3] remove
+      (u: U) => createFragment(Some(u).asInstanceOf[T])
     )
 
 }
