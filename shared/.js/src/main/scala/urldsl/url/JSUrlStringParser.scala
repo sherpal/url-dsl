@@ -1,7 +1,5 @@
 package urldsl.url
 
-import org.scalajs.dom.experimental.URL
-
 import scala.scalajs.js
 
 final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
