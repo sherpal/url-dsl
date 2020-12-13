@@ -6,8 +6,7 @@ This is a tiny library for parsing and generating paths and parameters of urls.
 
 We represent the path and query parameters of a url as follows:
 ```scala
-import urldsl.language.PathSegment.simplePathErrorImpl._
-import urldsl.language.QueryParameters.simpleParamErrorImpl._
+import urldsl.language.simpleErrorImpl._
 import urldsl.vocabulary.{Segment, Param, UrlMatching}
 
 val path = root / "hello" / segment[Int] / segment[String] / endOfSegments
@@ -30,34 +29,50 @@ params.matchQueryString("age=22&drinks=orange+juice&drinks=water") should be(
 )
 ```
 
-For more example usages, head over the tests.
+For more example usages, head over the tests, and in particular in the `urldsl.examples` package..
 
 ## Installation
 
 Add the following to your `build.sbt` (or wherever you add your dependencies):
 ```scala
-libraryDependencies += "be.doeraene" %% "url-dsl" % "0.2.0"
+libraryDependencies += "be.doeraene" %% "url-dsl" % "0.3.0"
 ```
 or, for Scala.js,
 ```scala
-libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.2.0"
+libraryDependencies += "be.doeraene" %%% "url-dsl" % "0.3.0"
 ```
 
-## The two important classes
+## The biggest abstraction
 
-There are essentially two classes that are important for using `urldsl` (plus a third one that group them both). You
-have on one side `urldsl.language.PathSegment`, which is the abstraction to describe the path part of the URL, and
-`urldsl.language.QueryParameters`, which is analogue for the query (search) parameters of the URL.
+The highest abstraction that this library provide is the [UrlPart](shared/src/main/scala/urldsl/language/UrlPart.scala). A `UrlPart` represents a part of the URL and will be able to:
 
-Both of these have two type parameters. The first one, respectively named `T` and `Q` in the code, is the type of the
-element contained in (or represented by) the path segment or the query parameters. For example, in the case of the path,
-if `T =:= (String, Int)`, the path contains the information about a `String` and an `Int`, as in the following segment
+- when applied to a URL, tries to extract information from that URL
+- when fed with information, generates a string that this piece of information represents.
+
+The part that the `UrlPart` represents can be:
+
+- the path of the URL
+- the query of the URL
+- the fragment of the URL
+- a combination of any of the above.
+
+This is a trait with two type parameters, `T` and `E`. The type `T` is the type of information represented in this `UrlPart`. For example, if `T =:= (String, Int)`, it means that we will get a pair when extracting information from a URL, and we will need to feed that when generating the string part of the URL.
+
+Matching a URL can fail. When it does, it will produce an element of type `E`. `E` can be any ADT of your choosing, however url-dsl comes with two default implementations, one particularly suited for debugging, and the other when you don't care about what error was produced (but you only care to know whether the test was successful).
+
+
+## The three important classes
+
+There are essentially three classes that are important for using `urldsl` (plus two others when you combine them), all of them extending `UrlPart`. These three classes are
+
+- [PathSegment](shared/src/main/scala/urldsl/language/PathSegment.scala): abstraction describinng the path part of the URL
+- [QueryParameters](shared/src/main/scala/urldsl/language/QueryParameters.scala): abstraction describing the query (search) part of the URL
+- [Fragment](shared/src/main/scala/urldsl/language/Fragment.scala): abstraction describing the fragment (ref) part of the URL
+
+As said above, these classes come with two type parameters, one for the information, and one for the possible matching error. For example, in the case of the path, if `T =:= (String, Int)`, the path contains the information about a `String` and an `Int`, as in the following segment
 ```scala
 root / segment[String] / "foo" / segment[Int]
 ```
-The second parameter represents the type of error that is emitted when the matching of a URL failed (because the URL
-does not satisfy the requirements of the path or the query). This error type can be customized to fit your best needs, or
-you can use one of the two default implementations (more on that below).
 
 
 ### Path
@@ -91,6 +106,8 @@ never be a next, though)
 - the list goes on...
 
 #### Examples
+
+Comprehensive examples can be found in [here](shared/src/test/scala/urldsl/examples/PathSegmentExamples.scala). Below we give a quick overview.
 
 The following examples assume the following import:
 ```scala
@@ -143,6 +160,8 @@ There are two main built in query parameters that you can use as building blocks
 
 #### Query parameters examples
 
+Comprehensive examples can be found in [here](shared/src/test/scala/urldsl/examples/QueryParamsExamples.scala). Below we give a quick overview.
+
 The following examples assume the following import:
 ```scala
 import urldsl.language.QueryParameters.simpleParamErrorImpl._
@@ -171,6 +190,26 @@ Let's expose what this means. Suppose we have two instances `foo` and `bar` resp
 `QueryParameters[String, A]` and `QueryParameters[Int, A]`. Then `foo & bar` and `bar & foo` will both match the two
 strings above, but the first one has type `QueryParameters[(String, Int), A]`, while the other one has type
 `QueryParameters[(Int, String), A]`.
+
+### Fragment
+
+The last class is `urldsl.language.Fragment`. It represents the fragment (sometimes called ref) part of the URL (which is the part after "#" at the end).
+
+The fragment part is very basic compared to the other two. It is either present or absent, and you can invoke it with
+
+```scala
+import urldsl.language.simpleErrorImpl._
+
+fragment[String] // extract the fragment information when it's there, failing otherwise
+fragment[Int]    // extract the fragment information when it's there, casting to int, failing otherwise
+
+maybeFragment[String] // extract the fragment information wrapped in Some when it's there, or None otherwise (never failing)
+empty                 // imposes that the fragment is absent, failing otherwise
+```
+
+#### Examples for Fragment
+
+Head over this [test file](shared/src/test/scala/urldsl/examples/FragmentExamples.scala).
 
 ## Error mechanism
 
@@ -218,10 +257,41 @@ In some methods, this error type also adds sugar on some methods (see, e.g., the
 
 In order to use the dummy error, you need the following imports:
 ```scala
-import urldsl.language.PathSegment.dummyErrorImpl._
-import urldsl.language.QueryParameters.dummyErrorImpl._
+import urldsl.language.dummyErrorImpl._
 ```
 
+## A router example
+
+url-dsl was thought with one possible goal in mind, the one of creating a routing system. An example of how to do that can be found [here](shared/src/test/scala/urldsl/examples/RouterUseCaseExample.scala).
+
+## Moving from 0.2.0 to 0.3.0
+
+If you come from version 0.2.0, here are a few things that you should pay attention to.
+
+### The new `UrlPart` trait
+
+If you need/want to abstract over all possible way to extract information from a URL, this is the way to go. Asking your user to give a `UrlPart[T, E]` will allow them to provide any of the above mentioned classes, as well as their combinations.
+
+### Import all syntax
+
+Previously, if you needed to mix `PathSegment` and `QueryParameters`, you had to make the two imports:
+
+```
+import urldsl.language.QueryParameters.simpleParamErrorImpl._
+import urldsl.language.PathSegment.simplePathErrorImpl._
+```
+
+With the addition of the fragment feature, we decided to create an instance for importing everythin at once:
+
+```
+import urldsl.language.simpleErrorImpl._
+// or
+import urldsl.language.dummyErrorImpl._
+```
+
+### Error type is now covariant
+
+This should not impact you very much.
 
 ## Internal
 
