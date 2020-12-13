@@ -84,7 +84,9 @@ final class PathSegmentProperties extends Properties("PathSegment") {
   }
 
   property("IntSegmentComplains") = forAll(Gen.nonEmptyListOf(nonIntSegmentGen)) { ls: List[Segment] =>
-    ($ / segment[Int]).matchSegments(ls) == Left(e.malformed(ls.head.content))
+    val matchResult = ($ / segment[Int]).matchSegments(ls)
+    val expectedResult = Left(e.malformed(ls.head.content))
+    Prop(matchResult == expectedResult) :| s"Match result was $matchResult but I needed $expectedResult"
   }
 
   property("oneOfValuesMatches") = forAll(Gen.nonEmptyListOf(segmentGen)) { ls: List[Segment] =>

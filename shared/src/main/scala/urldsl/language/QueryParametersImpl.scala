@@ -3,9 +3,17 @@ package urldsl.language
 import urldsl.errors.ParamMatchingError
 import urldsl.vocabulary.{FromString, Printer}
 
-final class QueryParametersImpl[A](implicit error: ParamMatchingError[A]) {
+trait QueryParametersImpl[A] {
 
-  val empty: QueryParameters[Unit, A] = QueryParameters.empty[A]
+  implicit protected val queryError: ParamMatchingError[A]
+
+  @deprecated(
+    "empty was poorly named, and is replaced by `ignore`. The semantic for empty might change in the future!",
+    since = "0.3.0"
+  )
+  val empty: QueryParameters[Unit, A] = QueryParameters.empty
+
+  val ignore: QueryParameters[Unit, A] = QueryParameters.ignore
 
   def param[Q](paramName: String)(implicit fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[Q, A] =
     QueryParameters.param(paramName)
@@ -20,6 +28,8 @@ final class QueryParametersImpl[A](implicit error: ParamMatchingError[A]) {
 object QueryParametersImpl {
 
   /** Invoker */
-  def apply[A](implicit error: ParamMatchingError[A]): QueryParametersImpl[A] = new QueryParametersImpl[A]
+  def apply[A](implicit error: ParamMatchingError[A]): QueryParametersImpl[A] = new QueryParametersImpl[A] {
+    implicit protected val queryError: ParamMatchingError[A] = error
+  }
 
 }

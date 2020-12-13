@@ -4,7 +4,7 @@ import scala.scalajs.js
 
 trait DefaultUrlStringGenerator {
 
-  val default: UrlStringGenerator = (str: String, _: String) =>
+  protected val default0: UrlStringGenerator = (str: String, _: String) =>
     js.Dynamic.global.applyDynamic("encodeURIComponent")(str).toString
 
 }

@@ -1,7 +1,7 @@
 package urldsl.language
 
 import urldsl.errors.{DummyError, ErrorFromThrowable, PathMatchingError, SimplePathMatchingError}
-import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParser, UrlStringParserGenerator}
+import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
 import scala.language.implicitConversions
@@ -11,7 +11,7 @@ import scala.language.implicitConversions
   * @tparam T type represented by this PathSegment
   * @tparam A type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait PathSegment[T, A] {
+trait PathSegment[T, +A] extends UrlPart[T, A] {
 
   /**
     * Tries to match the list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`.
@@ -81,12 +81,14 @@ trait PathSegment[T, A] {
   final def createPath(encoder: UrlStringGenerator)(implicit ev: Unit =:= T): String =
     createPath((), encoder)
 
+  final def createPart(t: T, encoder: UrlStringGenerator): String = createPath(t, encoder)
+
   /**
     * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Tupler]]
     * rules.
     */
-  final def /[U](that: PathSegment[U, A])(implicit ev: Tupler[T, U]): PathSegment[ev.Out, A] =
-    PathSegment.factory[ev.Out, A](
+  final def /[U, A1 >: A](that: PathSegment[U, A1])(implicit ev: Tupler[T, U]): PathSegment[ev.Out, A1] =
+    PathSegment.factory[ev.Out, A1](
       (segments: List[Segment]) =>
         for {
           firstOut <- this.matchSegments(segments)
@@ -119,30 +121,34 @@ trait PathSegment[T, A] {
     * - in a multi-part segment, ensure consistency between the different component (e.g., a range of two integers that
     *   should not be too large...)
     */
-  final def filter(predicate: T => Boolean, error: List[Segment] => A): PathSegment[T, A] = PathSegment.factory[T, A](
-    (segments: List[Segment]) =>
-      matchSegments(segments)
-        .filterOrElse(((_: PathMatchOutput[T]).output).andThen(predicate), error(segments)),
-    createSegments
-  )
+  final def filter[A1 >: A](predicate: T => Boolean, error: List[Segment] => A1): PathSegment[T, A1] =
+    PathSegment.factory[T, A1](
+      (segments: List[Segment]) =>
+        matchSegments(segments)
+          .filterOrElse(((_: PathMatchOutput[T]).output).andThen(predicate), error(segments)),
+      createSegments
+    )
 
   /** Sugar for when `A =:= DummyError` */
-  final def filter(predicate: T => Boolean)(implicit ev: DummyError =:= A): PathSegment[T, A] =
-    filter(predicate, _ => ev(DummyError.dummyError))
+  final def filter(predicate: T => Boolean)(implicit ev: A <:< DummyError): PathSegment[T, DummyError] = {
+    type F[+E] = PathSegment[T, E]
+    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+  }
 
   /**
     * Builds a [[PathSegment]] that first tries to match with this one, then tries to match with `that` one.
     * If both fail, the error of the second is returned (todo[behaviour]: should that change?)
     */
-  final def ||[U](that: PathSegment[U, A]): PathSegment[Either[T, U], A] = PathSegment.factory[Either[T, U], A](
-    segments =>
-      this.matchSegments(segments) match {
-        case Right(output) => Right(PathMatchOutput(Left(output.output), output.unusedSegments))
-        case Left(_) =>
-          that.matchSegments(segments).map(output => PathMatchOutput(Right(output.output), output.unusedSegments))
-      },
-    _.fold(this.createSegments, that.createSegments)
-  )
+  final def ||[U, A1 >: A](that: PathSegment[U, A1]): PathSegment[Either[T, U], A1] =
+    PathSegment.factory[Either[T, U], A1](
+      segments =>
+        this.matchSegments(segments) match {
+          case Right(output) => Right(PathMatchOutput(Left(output.output), output.unusedSegments))
+          case Left(_) =>
+            that.matchSegments(segments).map(output => PathMatchOutput(Right(output.output), output.unusedSegments))
+        },
+      _.fold(this.createSegments, that.createSegments)
+    )
 
   /**
     * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
@@ -160,11 +166,22 @@ trait PathSegment[T, A] {
   )
 
   /**
+    * Matches using this [[PathSegment]], and then forgets its content.
+    * Uses the `default` value when creating the path to go back.
+    */
+  final def ignore(default: => T): PathSegment[Unit, A] = PathSegment.factory[Unit, A](
+    matchSegments(_).map(_.map(_ => ())),
+    (_: Unit) => createSegments(default)
+  )
+
+  /**
     * Forgets the information contained in the path parameter by injecting one.
     * This turn this "dynamic" [[PathSegment]] into a fix one.
     */
-  final def provide(t: T)(implicit pathMatchingError: PathMatchingError[A], printer: Printer[T]): PathSegment[Unit, A] =
-    PathSegment.factory[Unit, A](
+  final def provide[A1 >: A](
+      t: T
+  )(implicit pathMatchingError: PathMatchingError[A1], printer: Printer[T]): PathSegment[Unit, A1] =
+    PathSegment.factory[Unit, A1](
       segments =>
         for {
           tMatch <- matchSegments(segments)
@@ -174,6 +191,18 @@ trait PathSegment[T, A] {
         } yield unitMatched,
       (_: Unit) => createSegments(t)
     )
+
+  /**
+    * Associates this [[PathSegment]] with the given [[Fragment]] in order to match raw urls satisfying both
+    * conditions, and returning the outputs from both.
+    *
+    * The query part of the url will be *ignored* (and will return Unit).
+    */
+  final def withFragment[FragmentType, FragmentError](
+      fragment: Fragment[FragmentType, FragmentError]
+  ): PathQueryFragmentRepr[T, A, Unit, Nothing, FragmentType, FragmentError] =
+    new PathQueryFragmentRepr(this, QueryParameters.ignore, fragment)
+
 }
 
 object PathSegment {
@@ -196,9 +225,9 @@ object PathSegment {
   }
 
   /** Simple path segment that matches everything by passing segments down the line. */
-  final def empty[A]: PathSegment[Unit, A] =
-    factory[Unit, A](segments => Right(PathMatchOutput((), segments)), _ => Nil)
-  final def root[A]: PathSegment[Unit, A] = empty
+  final def empty: PathSegment[Unit, Nothing] =
+    factory[Unit, Nothing](segments => Right(PathMatchOutput((), segments)), _ => Nil)
+  final def root: PathSegment[Unit, Nothing] = empty
 
   /** Simple path segment that matches nothing. This is the neutral of the || operator. */
   final def noMatch[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] =

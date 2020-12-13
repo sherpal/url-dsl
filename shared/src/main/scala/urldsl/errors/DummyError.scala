@@ -8,7 +8,7 @@ sealed trait DummyError
 
 object DummyError {
 
-  final val dummyError: DummyError = new DummyError {}
+  object dummyError extends DummyError
 
   implicit final lazy val dummyErrorIsParamMatchingError: ParamMatchingError[DummyError] =
     new ParamMatchingError[DummyError] {
@@ -30,6 +30,13 @@ object DummyError {
       def fromThrowable(throwable: Throwable): DummyError = dummyError
 
       def unit: DummyError = dummyError
+    }
+
+  implicit lazy val dummyErrorIsFragmentMatchingError: FragmentMatchingError[DummyError] =
+    new FragmentMatchingError[DummyError] {
+      def missingFragmentError: DummyError = dummyError
+      def wrongValue[T](actual: T, expected: T): DummyError = dummyError
+      def fragmentWasPresent(value: String): DummyError = dummyError
     }
 
   implicit final lazy val dummyErrorIsFromThrowable: ErrorFromThrowable[DummyError] = (_: Throwable) => dummyError

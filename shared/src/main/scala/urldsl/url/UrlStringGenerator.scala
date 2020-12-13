@@ -1,6 +1,6 @@
 package urldsl.url
 
-import urldsl.vocabulary.{Param, Segment}
+import urldsl.vocabulary.{MaybeFragment, Param, Segment}
 
 trait UrlStringGenerator {
 
@@ -9,11 +9,11 @@ trait UrlStringGenerator {
   def makePath(segments: List[Segment]): String =
     segments.map(_.content).map(encode(_)).filter(_.nonEmpty).mkString("/")
 
-  def makeParamsMap(params: Map[String, Param]): Map[String, List[String]] =
+  final def makeParamsMap(params: Map[String, Param]): Map[String, List[String]] =
     params
       .map { case (key, value) => key -> value.content.map(encode(_)) }
 
-  def makeParams(params: Map[String, Param]): String =
+  final def makeParams(params: Map[String, Param]): String =
     makeParamsMap(params)
       .flatMap { case (key, values) => values.map(value => s"$key=$value") }
       .mkString("&")
@@ -25,6 +25,16 @@ trait UrlStringGenerator {
     pathString + (if (paramsString.nonEmpty) "?" else "") + pathString
   }
 
+  final def makeFragment(maybeFragment: MaybeFragment): String = maybeFragment.value match {
+    case Some("")    => ""
+    case Some(value) => "#" ++ encode(value)
+    case None        => ""
+  }
+
 }
 
-object UrlStringGenerator extends DefaultUrlStringGenerator
+object UrlStringGenerator extends DefaultUrlStringGenerator {
+
+  val default: UrlStringGenerator = default0
+
+}

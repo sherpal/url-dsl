@@ -2,7 +2,7 @@ package urldsl.url
 
 trait DefaultUrlParserGenerator {
 
-  final val defaultUrlStringParserGenerator: UrlStringParserGenerator =
+  protected final val defaultUrlStringParserGenerator0: UrlStringParserGenerator =
     JSUrlStringParser.jsUrlStringParserGenerator
 
 }

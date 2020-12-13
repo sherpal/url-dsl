@@ -4,7 +4,7 @@ import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-trait QueryParameters[Q, A] {
+trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
 
   import QueryParameters._
 
@@ -55,6 +55,9 @@ trait QueryParameters[Q, A] {
   final def createParamsString(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makeParams(createParams(q))
 
+  final def createPart(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
+    createParamsString(q, encoder)
+
   /**
     * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[urldsl.language.Tupler]]
     *
@@ -63,8 +66,8 @@ trait QueryParameters[Q, A] {
     * called, you can end up with "Q = (Int, String)" or "Q = (String, Int)". This property is called
     * "QuasiCommutativity" in the tests.
     */
-  final def &[R](that: QueryParameters[R, A])(implicit ev: Tupler[Q, R]): QueryParameters[ev.Out, A] =
-    factory[ev.Out, A](
+  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit ev: Tupler[Q, R]): QueryParameters[ev.Out, A1] =
+    factory[ev.Out, A1](
       (params: Map[String, Param]) =>
         for {
           firstMatch <- this.matchParams(params)
@@ -108,15 +111,17 @@ trait QueryParameters[Q, A] {
     * @param error     the generated error in case it does not satisfy it
     * @return          a new [[QueryParameters]] instance with the same types
     */
-  final def filter(predicate: Q => Boolean, error: Map[String, Param] => A): QueryParameters[Q, A] = factory(
+  final def filter[A1 >: A](predicate: Q => Boolean, error: Map[String, Param] => A1): QueryParameters[Q, A1] = factory(
     (params: Map[String, Param]) =>
       matchParams(params).filterOrElse(((_: ParamMatchOutput[Q]).output).andThen(predicate), error(params)),
     createParams
   )
 
   /** Sugar for when `A =:= DummyError`. */
-  final def filter(predicate: Q => Boolean)(implicit ev: DummyError =:= A): QueryParameters[Q, A] =
-    filter(predicate, _ => ev(DummyError.dummyError))
+  final def filter(predicate: Q => Boolean)(implicit ev: A <:< DummyError): QueryParameters[Q, DummyError] = {
+    type F[+E] = QueryParameters[Q, E]
+    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
+  }
 
   /**
     * Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
@@ -126,6 +131,17 @@ trait QueryParameters[Q, A] {
     (matchParams _).andThen(_.map(_.map(codec.leftToRight))),
     (codec.rightToLeft _).andThen(createParams)
   )
+
+  /**
+    * Associates this [[QueryParameters]] with the given [[Fragment]] in order to match raw urls satisfying both
+    * conditions, and returning the outputs from both.
+    *
+    * The path part of the url will be *ignored* (and will return Unit).
+    */
+  final def withFragment[FragmentType, FragmentError](
+      fragment: Fragment[FragmentType, FragmentError]
+  ): PathQueryFragmentRepr[Unit, Nothing, Q, A, FragmentType, FragmentError] =
+    new PathQueryFragmentRepr(PathSegment.root, this, fragment)
 
 }
 
@@ -139,10 +155,13 @@ object QueryParameters {
     def createParams(q: Q): Map[String, Param] = creating(q)
   }
 
-  final def empty[A](implicit paramMatchingError: ParamMatchingError[A]): QueryParameters[Unit, A] = factory[Unit, A](
+  final def empty: QueryParameters[Unit, Nothing] = factory[Unit, Nothing](
     (params: Map[String, Param]) => Right(ParamMatchOutput((), params)),
     _ => Map()
   )
+
+  /** Alias for empty which seems to better reflect the semantic. */
+  final def ignore: QueryParameters[Unit, Nothing] = empty
 
   final def simpleQueryParam[Q, A](
       paramName: String,

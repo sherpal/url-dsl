@@ -28,7 +28,7 @@ organization := "be.doeraene"
 
 inThisBuild(
   Def.settings(
-    version := "0.2.0",
+    version := "0.3.0",
     crossScalaVersions := Seq("2.13.1", "2.12.10"),
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ++= Seq("-feature", "-deprecation")
@@ -48,11 +48,6 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "org.scalatest" %%% "scalatest" % "3.1.1" % "test",
       "org.scalacheck" %%% "scalacheck" % "1.14.3" % "test"
-    )
-  )
-  .jsSettings(
-    libraryDependencies ++= List(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.8"
     )
   )
 

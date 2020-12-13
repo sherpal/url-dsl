@@ -6,9 +6,12 @@ final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
   private val urlParser = new URL(rawUrl)
 
-  def queryParametersString: String = urlParser.getQuery
+  def queryParametersString: String = Option(urlParser.getQuery).getOrElse("")
 
   def path: String = urlParser.getPath
+
+  /* getRef method of URL returns null if # is not present. */
+  def maybeFragment: Option[String] = Option(urlParser.getRef).filter(_.nonEmpty)
 
   def decode(str: String, encoding: String): String = URLDecoder.decode(str, encoding)
 }

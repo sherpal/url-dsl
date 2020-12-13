@@ -2,7 +2,8 @@ package urldsl.vocabulary
 
 import scala.language.implicitConversions
 
-final case class Segment(content: String) {
+/** A [[Segment]] is a simple wrapper around a specific String content between two `/`. */
+final case class Segment(content: String) extends AnyVal {
   def map(f: String => String): Segment = Segment(f(content))
 }
 

@@ -12,4 +12,10 @@ trait UrlStringDecoder {
       .map { case (key, value) => key -> value.transform(decode(_)) }
 }
 
-object UrlStringDecoder extends DefaultUrlStringDecoder
+object UrlStringDecoder extends DefaultUrlStringDecoder {
+
+  val defaultDecoder: UrlStringDecoder = defaultDecoder0
+
+  val identityDecoder: UrlStringDecoder = (str: String, _: String) => str
+
+}

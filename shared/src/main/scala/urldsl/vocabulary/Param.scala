@@ -1,6 +1,6 @@
 package urldsl.vocabulary
 
-final case class Param(content: List[String]) {
+final case class Param(content: List[String]) extends AnyVal {
   def transform(f: String => String): Param = Param(content.map(f))
 }
 
