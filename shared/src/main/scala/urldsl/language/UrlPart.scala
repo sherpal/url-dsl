@@ -28,3 +28,24 @@ trait UrlPart[T, +E] {
   final def createPart()(implicit ev: Unit =:= T): String = createPart(ev(()))
 
 }
+
+object UrlPart {
+
+  private[language] def factory[T, E](
+      matcher: (String, UrlStringParserGenerator) => Either[E, T],
+      generator: (T, UrlStringGenerator) => String
+  ) = new UrlPart[T, E] {
+    def matchRawUrl(url: String, urlStringParserGenerator: UrlStringParserGenerator): Either[E, T] =
+      matcher(url, urlStringParserGenerator)
+
+    def createPart(t: T, encoder: UrlStringGenerator): String = generator(t, encoder)
+  }
+
+  /**
+    * Type alias when you don't care about what kind of error is issued.
+    * [[Any]] can seem weird, but it has to be understood as "since it can fail with anything, I won't be able to do
+    * anything with the error, which means that I can only check whether it failed or not".
+    */
+  type SimpleUrlPart[T] = UrlPart[T, Any]
+
+}

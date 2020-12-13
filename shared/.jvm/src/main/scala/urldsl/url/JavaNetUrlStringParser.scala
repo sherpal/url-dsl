@@ -6,7 +6,7 @@ final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
   private val urlParser = new URL(rawUrl)
 
-  def queryParametersString: String = urlParser.getQuery
+  def queryParametersString: String = Option(urlParser.getQuery).getOrElse("")
 
   def path: String = urlParser.getPath
 

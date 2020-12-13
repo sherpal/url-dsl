@@ -72,4 +72,34 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
     pathSegment.createPart(path, encoder) ++ queryPart ++ fragment.createPart(fragmentInfo, encoder)
   }
 
+  /** If this instance actually only bear path information, retrieves that information only. */
+  def pathOnly(
+      implicit ev1: Unit =:= ParamsType,
+      ev2: Unit =:= FragmentType
+  ): UrlPart[PathType, PathQueryFragmentError[PathError, ParamsError, FragmentError]] =
+    UrlPart.factory(
+      (str, urlParserGenerator) => matchRawUrl(str, urlParserGenerator).map(_.path),
+      (p, encoder) => createPart(PathQueryFragmentMatching(p, ev1(()), ev2(())), encoder)
+    )
+
+  /** If this instance actually only bear query information, retrieves that information only. */
+  def queryOnly(
+      implicit ev1: Unit =:= PathType,
+      ev2: Unit =:= FragmentType
+  ): UrlPart[ParamsType, PathQueryFragmentError[PathError, ParamsError, FragmentError]] =
+    UrlPart.factory(
+      (str, urlParserGenerator) => matchRawUrl(str, urlParserGenerator).map(_.query),
+      (q, encoder) => createPart(PathQueryFragmentMatching(ev1(()), q, ev2(())), encoder)
+    )
+
+  /** If this instance actually only bear fragment information, retrieves that information only. */
+  def fragmentOnly(
+      implicit ev1: Unit =:= ParamsType,
+      ev2: Unit =:= PathType
+  ): UrlPart[FragmentType, PathQueryFragmentError[PathError, ParamsError, FragmentError]] =
+    UrlPart.factory(
+      (str, urlParserGenerator) => matchRawUrl(str, urlParserGenerator).map(_.fragment),
+      (f, encoder) => createPart(PathQueryFragmentMatching(ev2(()), ev1(()), f), encoder)
+    )
+
 }
