@@ -31,7 +31,7 @@ inThisBuild(
     version := "1.0.0",
     crossScalaVersions := Seq("3.0.0-M2"),
     scalaVersion := crossScalaVersions.value.head,
-    scalacOptions ++= Seq("-feature", "-deprecation")
+    scalacOptions ++= Seq("-feature", "-deprecation", "-language:implicitConversions")
   )
 )
 

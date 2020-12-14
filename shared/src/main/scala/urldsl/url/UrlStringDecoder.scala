@@ -10,10 +10,10 @@ trait UrlStringDecoder:
     Param
       .fromQueryString(queryString)
       .map { case (key, value) => key -> value.transform(decode(_)) }
+end UrlStringDecoder
 
 object UrlStringDecoder extends DefaultUrlStringDecoder:
-
   val defaultDecoder: UrlStringDecoder = defaultDecoder0
-
   val identityDecoder: UrlStringDecoder = (str: String, _: String) => str
+end UrlStringDecoder
 

@@ -7,6 +7,5 @@ package urldsl.errors
   * @tparam A tye type of your error.
   */
 trait ErrorFromThrowable[A]:
-
   def fromThrowable(throwable: Throwable): A
 

@@ -14,3 +14,4 @@ final case class MaybeFragment(value: Option[String]) extends AnyVal:
 
   def nonEmpty: Boolean = value.nonEmpty
 
+end MaybeFragment

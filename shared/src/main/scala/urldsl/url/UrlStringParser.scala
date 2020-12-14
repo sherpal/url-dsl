@@ -22,3 +22,4 @@ trait UrlStringParser extends UrlStringDecoder:
   final def params: Map[String, Param] = decodeParams(queryParametersString)
   final def maybeFragmentObj: MaybeFragment = MaybeFragment(maybeFragment)
 
+end UrlStringParser

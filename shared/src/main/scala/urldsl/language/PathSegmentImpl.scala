@@ -54,6 +54,7 @@ trait PathSegmentImpl[A]:
           .map(_ => ()),
       (_: Unit) => Segment(printer(t))
     )
+end PathSegmentImpl
 
 
 object PathSegmentImpl:
@@ -62,4 +63,5 @@ object PathSegmentImpl:
   def apply[A](using error: PathMatchingError[A]): PathSegmentImpl[A] = new PathSegmentImpl[A] {
     implicit protected val pathError: PathMatchingError[A] = error
   }
+end PathSegmentImpl
 

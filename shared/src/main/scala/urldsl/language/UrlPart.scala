@@ -5,13 +5,20 @@ import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
 /**
   * A [[UrlPart]] represents a part of (or the entire) URL and is able to extract some information out of it.
   * When it succeeds to extract information, it returns an element of type T (wrapped in a [[Right]]). When it fails
-  * to extract such information, it returns an error type E (wrapped in a [[Left]].
+  * to extract such information, it returns an error type E (wrapped in a [[Left]]).
   *
   * A [[UrlPart]] is also able to generate its corresponding part of the URL by ingesting an element of type T. When
   * doing that, it outputs a String (whose semantic may vary depending on the type of [[UrlPart]] you are dealing with).
   */
 trait UrlPart[T, +E]:
 
+  /**
+   * Extract from the (well-formed!) url, the information represented by this [[UrlPart]].
+   * The url is decoded using the given [[UrlStringParserGenerator]], which by default will be the one decoding URLs
+   * according to the official URL specifications (for example, "%20" is decoded as " ").
+   * 
+   * Throws an exception if the url is not a proper url (according to specifications).
+   */
   def matchRawUrl(
       url: String,
       urlStringParserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
@@ -26,19 +33,18 @@ trait UrlPart[T, +E]:
 
   /** Sugar when T =:= Unit */
   final def createPart()(using ev: Unit =:= T): String = createPart(ev(()))
-
+end UrlPart
 
 object UrlPart:
 
   private[language] def factory[T, E](
       matcher: (String, UrlStringParserGenerator) => Either[E, T],
       generator: (T, UrlStringGenerator) => String
-  ) = new UrlPart[T, E] {
+  ) = new UrlPart[T, E]:
     def matchRawUrl(url: String, urlStringParserGenerator: UrlStringParserGenerator): Either[E, T] =
       matcher(url, urlStringParserGenerator)
 
     def createPart(t: T, encoder: UrlStringGenerator): String = generator(t, encoder)
-  }
 
   /**
     * Type alias when you don't care about what kind of error is issued.
@@ -47,3 +53,4 @@ object UrlPart:
     */
   type SimpleUrlPart[T] = UrlPart[T, Any]
 
+end UrlPart

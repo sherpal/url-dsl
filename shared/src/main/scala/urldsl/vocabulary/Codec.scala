@@ -15,6 +15,8 @@ trait Codec[Left, Right]:
     that.rightToLeft _ andThen this.rightToLeft
   )
 
+end Codec
+
 
 object Codec:
 

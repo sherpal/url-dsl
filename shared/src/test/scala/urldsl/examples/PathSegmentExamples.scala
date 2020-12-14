@@ -116,7 +116,7 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     /** When trying to match a type that can not be created from the segment [[String]], it fails. */
     (root / segment[Int]).matchRawUrl(sampleUrl) should be(
       Left(
-        SimplePathMatchingError.SimpleError("""For input string: "foo"""")
+        SimplePathMatchingError.SimpleError("""foo is not numeric""")
       )
     )
 

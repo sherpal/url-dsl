@@ -43,6 +43,7 @@ trait FragmentImpl[E]:
       printer: Printer[T],
       classTag: ClassTag[T]
   ): Fragment[Unit, E] = Fragment.asFragment(t)
+end FragmentImpl
 
 
 object FragmentImpl:
@@ -51,3 +52,4 @@ object FragmentImpl:
   def apply[E](using error: FragmentMatchingError[E]): FragmentImpl[E] = new FragmentImpl[E] {
     implicit protected val fragmentError: FragmentMatchingError[E] = error
   }
+end FragmentImpl

@@ -41,3 +41,4 @@ object DummyError:
 
   implicit final lazy val dummyErrorIsFromThrowable: ErrorFromThrowable[DummyError] = (_: Throwable) => dummyError
 
+end DummyError

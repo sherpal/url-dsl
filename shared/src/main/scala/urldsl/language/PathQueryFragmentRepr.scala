@@ -96,4 +96,4 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
       (str, urlParserGenerator) => matchRawUrl(str, urlParserGenerator).map(_.fragment),
       (f, encoder) => createPart(PathQueryFragmentMatching(ev2(()), ev1(()), f), encoder)
     )
-
+end PathQueryFragmentRepr

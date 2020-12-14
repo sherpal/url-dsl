@@ -29,8 +29,9 @@ trait UrlStringGenerator:
     case Some(value) => "#" ++ encode(value)
     case None        => ""
 
+end UrlStringGenerator
+
 
 object UrlStringGenerator extends DefaultUrlStringGenerator:
-
   val default: UrlStringGenerator = default0
 

@@ -201,6 +201,7 @@ trait PathSegment[T, +A] extends UrlPart[T, A]:
       fragment: Fragment[FragmentType, FragmentError]
   ): PathQueryFragmentRepr[T, A, Unit, Nothing, FragmentType, FragmentError] =
     new PathQueryFragmentRepr(this, QueryParameters.ignore, fragment)
+end PathSegment
 
 
 object PathSegment:
@@ -319,14 +320,12 @@ object PathSegment:
     * e.g.,
     * `root / "hello" / true`
     */
-  implicit final def unaryPathSegment[T, A](
-      t: T
-  )(
+  given [T, A] (
       using fromString: FromString[T, A],
       printer: Printer[T],
       pathMatchingError: PathMatchingError[A]
-  ): PathSegment[Unit, A] =
-    simplePathSegment(
+  ) as Conversion[T, PathSegment[Unit, A]]:
+    def apply(t: T) = simplePathSegment(
       s =>
         fromString(s.content)
           .filterOrElse[A](_ == t, pathMatchingError.wrongValue(printer(t), s.content))
@@ -337,3 +336,4 @@ object PathSegment:
   final lazy val dummyErrorImpl = PathSegmentImpl[DummyError]
   final lazy val simplePathErrorImpl = PathSegmentImpl[SimplePathMatchingError]
 
+end PathSegment

@@ -141,6 +141,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A]:
       fragment: Fragment[FragmentType, FragmentError]
   ): PathQueryFragmentRepr[Unit, Nothing, Q, A, FragmentType, FragmentError] =
     new PathQueryFragmentRepr(PathSegment.root, this, fragment)
+end QueryParameters
 
 
 object QueryParameters:
@@ -218,4 +219,4 @@ object QueryParameters:
 
   final lazy val dummyErrorImpl = QueryParametersImpl[DummyError]
   final lazy val simpleParamErrorImpl = QueryParametersImpl[SimpleParamMatchingError]
-
+end QueryParameters

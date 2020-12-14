@@ -83,3 +83,4 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
 
   def createPart(t: UrlMatching[PathType, ParamsType], encoder: UrlStringGenerator): String =
     createUrlString(t.path, t.params, encoder)
+end PathSegmentWithQueryParams

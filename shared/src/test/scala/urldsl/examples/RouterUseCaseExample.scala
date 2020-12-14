@@ -26,22 +26,19 @@ final class RouterUseCaseExample extends AnyFlatSpec with Matchers {
   import urldsl.language.dummyErrorImpl._
 
   /** Link a [[urldsl.language.UrlPart]] matching some routes, to an action using the information extracted from the route. */
-  sealed trait Route[T] {
+  sealed trait Route[T]:
     def urlPart: SimpleUrlPart[T]
     def action(t: T): Output
 
     final def apply(rawUrl: String): Option[Output] = urlPart.matchRawUrl(rawUrl).map(action).toOption
-  }
 
-  object Route {
-    def apply[T](urlPart0: SimpleUrlPart[T])(action0: T => Output): Route[T] = new Route[T] {
+  object Route:
+    def apply[T](urlPart0: SimpleUrlPart[T])(action0: T => Output): Route[T] = new Route[T]:
       val urlPart: SimpleUrlPart[T] = urlPart0
       def action(t: T): Output = action0(t)
-    }
-  }
 
   /** Collection of [[Route]] to be tried in order when calling with a given url. */
-  case class Router(routes: List[Route[_]]) {
+  case class Router(routes: List[Route[_]]):
 
     /**
       * Sequentially tries to match the given url with all the routes, and call the action of the first matching.
@@ -55,11 +52,9 @@ final class RouterUseCaseExample extends AnyFlatSpec with Matchers {
 
     /** Same as maybeCallAction with a default output when no match is found. */
     def callActionWithDefault(rawUrl: String, default: Output): Output = maybeCallAction(rawUrl).getOrElse(default)
-  }
 
-  object Router {
+  object Router:
     def apply(routes: Route[_]*): Router = Router(routes.toList)
-  }
 
   "Router" should "work" in {
 

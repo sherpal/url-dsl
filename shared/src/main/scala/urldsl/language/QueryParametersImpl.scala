@@ -23,6 +23,8 @@ trait QueryParametersImpl[A]:
   )(using fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[List[Q], A] =
     QueryParameters.listParam(paramName)
 
+end QueryParametersImpl
+
 
 object QueryParametersImpl:
 

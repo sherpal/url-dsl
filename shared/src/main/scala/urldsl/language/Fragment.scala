@@ -179,3 +179,4 @@ object Fragment:
   lazy val simpleFragmentErrorImpl: FragmentImpl[SimpleFragmentMatchingError] =
     FragmentImpl[SimpleFragmentMatchingError]
 
+end Fragment
