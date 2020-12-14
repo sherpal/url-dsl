@@ -2,7 +2,7 @@ package urldsl.url
 
 import urldsl.vocabulary.{MaybeFragment, Param, Segment}
 
-trait UrlStringParser extends UrlStringDecoder {
+trait UrlStringParser extends UrlStringDecoder:
 
   val rawUrl: String
 
@@ -22,4 +22,3 @@ trait UrlStringParser extends UrlStringDecoder {
   final def params: Map[String, Param] = decodeParams(queryParametersString)
   final def maybeFragmentObj: MaybeFragment = MaybeFragment(maybeFragment)
 
-}

@@ -18,21 +18,19 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
 ) extends UrlPart[
       PathQueryFragmentMatching[PathType, ParamsType, FragmentType],
       PathQueryFragmentError[PathError, ParamsError, FragmentError]
-    ] {
+    ]:
 
-  private implicit class ErrorMappingEither[E, A](either: Either[E, A]) {
-    def mapError[F](f: E => F): Either[F, A] = either match {
+  private implicit class ErrorMappingEither[E, A](either: Either[E, A]):
+    def mapError[F](f: E => F): Either[F, A] = either match
       case Left(value)  => Left(f(value))
       case Right(value) => Right(value)
-    }
-  }
 
   // note: should this rather be some kind of Validated instead of either?
   private[language] def matchUrl(path: List[Segment], params: Map[String, Param], maybeFragment: MaybeFragment): Either[
     PathQueryFragmentError[PathError, ParamsError, FragmentError],
     PathQueryFragmentMatching[PathMatchOutput[PathType], ParamMatchOutput[ParamsType], FragmentType]
   ] =
-    for {
+    for
       path <- pathSegment
         .matchSegments(path)
         .mapError[PathQueryFragmentError[PathError, ParamsError, FragmentError]](PathQueryFragmentError.PathError(_))
@@ -44,7 +42,7 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
         .mapError[PathQueryFragmentError[PathError, ParamsError, FragmentError]](
           PathQueryFragmentError.FragmentError(_)
         )
-    } yield PathQueryFragmentMatching(path, query, fragment)
+    yield PathQueryFragmentMatching(path, query, fragment)
 
   def matchRawUrl(
       url: String,
@@ -53,24 +51,21 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
     PathType,
     ParamsType,
     FragmentType
-  ]] = {
+  ]] =
     val parser = urlStringParserGenerator.parser(url)
     matchUrl(parser.segments, parser.params, parser.maybeFragmentObj).map(_.extractInfo)
-  }
 
   def createPart(
       info: PathQueryFragmentMatching[PathType, ParamsType, FragmentType],
       encoder: UrlStringGenerator
-  ): String = {
+  ): String =
     val PathQueryFragmentMatching(path, query, fragmentInfo) = info
 
-    val queryPart = queryParams.createPart(query, encoder) match {
+    val queryPart = queryParams.createPart(query, encoder) match
       case ""    => ""
       case other => "?" ++ other
-    }
 
     pathSegment.createPart(path, encoder) ++ queryPart ++ fragment.createPart(fragmentInfo, encoder)
-  }
 
   /** If this instance actually only bear path information, retrieves that information only. */
   def pathOnly(
@@ -102,4 +97,3 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
       (f, encoder) => createPart(PathQueryFragmentMatching(ev2(()), ev1(()), f), encoder)
     )
 
-}

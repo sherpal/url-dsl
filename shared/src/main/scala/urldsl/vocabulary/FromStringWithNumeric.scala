@@ -2,12 +2,12 @@ package urldsl.vocabulary
 
 import urldsl.errors.ErrorFromThrowable
 
-trait FromStringWithNumeric {
+trait FromStringWithNumeric:
 
-  implicit def numericFromString[T, A](
-      implicit num: Numeric[T],
+  given[T, A](
+      using num: Numeric[T],
       fromThrowable: ErrorFromThrowable[A]
-  ): FromString[T, A] = FromString.factory(
+  ) as FromString[T, A] = FromString.factory(
     s =>
       num.parseString(s) match {
         case Some(t) => Right(t)
@@ -15,4 +15,3 @@ trait FromStringWithNumeric {
       }
   )
 
-}

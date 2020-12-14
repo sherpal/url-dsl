@@ -1,10 +1,9 @@
 package urldsl.vocabulary
 
-final case class Param(content: List[String]) extends AnyVal {
+final case class Param(content: List[String]) extends AnyVal:
   def transform(f: String => String): Param = Param(content.map(f))
-}
 
-object Param {
+object Param:
 
   def fromQueryString(queryString: String): Map[String, Param] =
     queryString
@@ -20,4 +19,3 @@ object Param {
       .map { case (key, value) => key -> value.map(_._2) }
       .map { case (key, value) => key -> Param(value) }
 
-}

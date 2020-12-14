@@ -2,7 +2,7 @@ package urldsl.url
 
 import scala.scalajs.js
 
-final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
+final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser:
 
   private val urlParser = new URL(rawUrl)
 
@@ -20,11 +20,9 @@ final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
   def decode(str: String, encoding: String): String = js.Dynamic.global.applyDynamic("decodeURIComponent")(str).toString
 
-}
 
-object JSUrlStringParser {
+object JSUrlStringParser:
 
   final lazy val jsUrlStringParserGenerator: UrlStringParserGenerator =
     (rawUrl: String) => new JSUrlStringParser(rawUrl)
 
-}

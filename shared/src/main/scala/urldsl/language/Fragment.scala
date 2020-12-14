@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
   * @tparam T type represented by this PathSegment
   * @tparam E type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait Fragment[T, +E] extends UrlPart[T, E] {
+trait Fragment[T, +E] extends UrlPart[T, E]:
 
   import Fragment.factory
 
@@ -38,7 +38,7 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
     encoder.makeFragment(createFragment(t))
 
   /** Sugar when {{{T =:= Unit}}}. */
-  def fragmentString()(implicit ev: Unit =:= T): String = fragmentString(())
+  def fragmentString()(using ev: Unit =:= T): String = fragmentString(ev(()))
 
   def createPart(t: T, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     fragmentString(t, encoder)
@@ -49,7 +49,7 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
     (u: U) => createFragment(uToT(u))
   )
 
-  def as[U](implicit codec: Codec[T, U]): Fragment[U, E] = as[U](codec.leftToRight _, codec.rightToLeft _)
+  def as[U](using codec: Codec[T, U]): Fragment[U, E] = as[U](codec.leftToRight _, codec.rightToLeft _)
 
   /**
     * Turns this fragment matching a `T` into a fragment matching an [[Option]] of T.
@@ -84,10 +84,9 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
     )
 
   /** Sugar when `T =:= DummyError`. */
-  final def filter(predicate: T => Boolean)(implicit ev: E <:< DummyError): Fragment[T, DummyError] = {
+  final def filter(predicate: T => Boolean)(using ev: E <:< DummyError): Fragment[T, DummyError] =
     type F[+E1] = Fragment[T, E1]
     ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
-  }
 
   /**
     * Returns a [[Fragment]] which outputs the contents of this [[Fragment]] when result is a [[Some]] and the
@@ -98,15 +97,14 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
     *
     * @param default default value when output is empty
     */
-  final def getOrElse[U](default: => U)(implicit ev: T =:= Option[U]): Fragment[U, E] =
+  final def getOrElse[U](default: => U)(using ev: T =:= Option[U]): Fragment[U, E] =
     factory[U, E](
       (maybeFragment: MaybeFragment) => matchFragment(maybeFragment).map(ev(_).getOrElse(default)),
       (u: U) => createFragment(ev.flip(Some(u)))
     )
 
-}
 
-object Fragment {
+object Fragment:
 
   def factory[T, E](extractor: MaybeFragment => Either[E, T], generator: T => MaybeFragment): Fragment[T, E] =
     new Fragment[T, E] {
@@ -121,7 +119,7 @@ object Fragment {
     * If the fragment is missing, returns an error.
     */
   def fragment[T, A](
-      implicit fromString: FromString[T, A],
+      using fromString: FromString[T, A],
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A]
   ): Fragment[T, A] = factory[T, A](
@@ -139,7 +137,7 @@ object Fragment {
     * If the fragment is missing, returns None.
     */
   final def maybeFragment[T, A](
-      implicit fromString: FromString[T, A],
+      using fromString: FromString[T, A],
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A]
   ): Fragment[Option[T], A] = factory[Option[T], A](
@@ -151,7 +149,7 @@ object Fragment {
   )
 
   /** Imposes that the URL does not contain a Fragment. */
-  final def empty[A](implicit fragmentMatchingError: FragmentMatchingError[A]): Fragment[Unit, A] = factory[Unit, A](
+  final def empty[A](using fragmentMatchingError: FragmentMatchingError[A]): Fragment[Unit, A] = factory[Unit, A](
     {
       case MaybeFragment(None)           => Right(())
       case MaybeFragment(Some(fragment)) => Left(fragmentMatchingError.fragmentWasPresent(fragment))
@@ -160,7 +158,7 @@ object Fragment {
   )
 
   implicit def asFragment[T, A](t: T)(
-      implicit fromString: FromString[T, A],
+      using fromString: FromString[T, A],
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A],
       classTag: ClassTag[T]
@@ -181,4 +179,3 @@ object Fragment {
   lazy val simpleFragmentErrorImpl: FragmentImpl[SimpleFragmentMatchingError] =
     FragmentImpl[SimpleFragmentMatchingError]
 
-}

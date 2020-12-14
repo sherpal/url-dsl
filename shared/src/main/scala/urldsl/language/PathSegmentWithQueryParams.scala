@@ -6,33 +6,29 @@ import urldsl.vocabulary._
 final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +ParamsError] private[language] (
     pathSegment: PathSegment[PathType, PathError],
     queryParams: QueryParameters[ParamsType, ParamsError]
-) extends UrlPart[UrlMatching[PathType, ParamsType], Either[PathError, ParamsError]] {
+) extends UrlPart[UrlMatching[PathType, ParamsType], Either[PathError, ParamsError]]:
 
   def matchUrl(
       path: List[Segment],
       params: Map[String, Param]
   ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
-    pathSegment.matchSegments(path) match {
+    pathSegment.matchSegments(path) match
       case Left(error) => Left(Left(error))
       case Right(PathMatchOutput(pathOut, _)) =>
-        queryParams.matchParams(params) match {
+        queryParams.matchParams(params) match
           case Left(error)                           => Left(Right(error))
           case Right(ParamMatchOutput(paramsOut, _)) => Right(UrlMatching(pathOut, paramsOut))
-        }
-    }
 
   def matchRawUrl(
       url: String,
       parserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
   ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
-    pathSegment.matchRawUrl(url, parserGenerator) match {
+    pathSegment.matchRawUrl(url, parserGenerator) match
       case Left(error) => Left(Left(error))
       case Right(pathOutput) =>
-        queryParams.matchRawUrl(url, parserGenerator) match {
+        queryParams.matchRawUrl(url, parserGenerator) match
           case Left(error)         => Left(Right(error))
           case Right(paramsOutput) => Right(UrlMatching(pathOutput, paramsOutput))
-        }
-    }
 
   def matchRawUrlOption(
       url: String,
@@ -44,14 +40,12 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
       queryString: String,
       decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder
   ): Either[Either[PathError, ParamsError], UrlMatching[PathType, ParamsType]] =
-    pathSegment.matchPath(path, decoder) match {
+    pathSegment.matchPath(path, decoder) match
       case Left(error) => Left(Left(error))
       case Right(pathOutput) =>
-        queryParams.matchQueryString(queryString, decoder) match {
+        queryParams.matchQueryString(queryString, decoder) match
           case Left(error)         => Left(Right(error))
           case Right(paramsOutput) => Right(UrlMatching(pathOutput, paramsOutput))
-        }
-    }
 
   def matchPathAndQueryOption(
       path: String,
@@ -62,7 +56,7 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
   def createUrl(path: PathType, params: ParamsType): (List[Segment], Map[String, Param]) =
     (pathSegment.createSegments(path), queryParams.createParams(params))
 
-  def createUrl(path: PathType)(implicit ev: Unit =:= ParamsType): (List[Segment], Map[String, Param]) =
+  def createUrl(path: PathType)(using ev: Unit =:= ParamsType): (List[Segment], Map[String, Param]) =
     createUrl(path, ev(()))
 
   def createUrlString(
@@ -73,7 +67,7 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
     pathSegment.createPath(path, generator) ++ "?" ++ queryParams.createParamsString(params, generator)
 
   def &[OtherParamsType, ParamsError1 >: ParamsError](otherParams: QueryParameters[OtherParamsType, ParamsError1])(
-      implicit
+      using
       ev: Tupler[ParamsType, OtherParamsType]
   ): PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError1] =
     new PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError1](
@@ -89,4 +83,3 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
 
   def createPart(t: UrlMatching[PathType, ParamsType], encoder: UrlStringGenerator): String =
     createUrlString(t.path, t.params, encoder)
-}

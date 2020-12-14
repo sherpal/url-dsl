@@ -2,7 +2,7 @@ package urldsl.url
 
 import urldsl.vocabulary.{Param, Segment}
 
-trait UrlStringDecoder {
+trait UrlStringDecoder:
   def decode(str: String, encoding: String = "utf-8"): String
 
   def decodePath(path: String): List[Segment] = Segment.fromPath(path).map(_.map(decode(_)))
@@ -10,12 +10,10 @@ trait UrlStringDecoder {
     Param
       .fromQueryString(queryString)
       .map { case (key, value) => key -> value.transform(decode(_)) }
-}
 
-object UrlStringDecoder extends DefaultUrlStringDecoder {
+object UrlStringDecoder extends DefaultUrlStringDecoder:
 
   val defaultDecoder: UrlStringDecoder = defaultDecoder0
 
   val identityDecoder: UrlStringDecoder = (str: String, _: String) => str
 
-}

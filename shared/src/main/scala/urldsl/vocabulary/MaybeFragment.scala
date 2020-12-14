@@ -5,7 +5,7 @@ package urldsl.vocabulary
   *
   * None when the URL does not contain any fragment.
   */
-final case class MaybeFragment(value: Option[String]) extends AnyVal {
+final case class MaybeFragment(value: Option[String]) extends AnyVal:
 
   /** Prepend the hashtag symbol if the fragment is present, otherwise returns the empty string. */
   def representation: String = value.map("#" ++ _).getOrElse("")
@@ -14,4 +14,3 @@ final case class MaybeFragment(value: Option[String]) extends AnyVal {
 
   def nonEmpty: Boolean = value.nonEmpty
 
-}

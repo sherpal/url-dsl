@@ -5,7 +5,7 @@ sealed trait SimpleParamMatchingError
 /**
   * An implementation of [[ParamMatchingError]] that simply wraps the trigger of the error inside its components.
   */
-object SimpleParamMatchingError {
+object SimpleParamMatchingError:
 
   case class MissingParameterError(paramName: String) extends SimpleParamMatchingError
   case class FromThrowable(throwable: Throwable) extends SimpleParamMatchingError
@@ -16,4 +16,3 @@ object SimpleParamMatchingError {
   implicit lazy val simpleParamMatchingErrorIsFromThrowable: ErrorFromThrowable[SimpleParamMatchingError] =
     (throwable: Throwable) => FromThrowable(throwable)
 
-}

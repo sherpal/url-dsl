@@ -24,27 +24,27 @@ import scala.language.implicitConversions
   *
   * @tparam A type of error.
   */
-trait PathSegmentImpl[A] {
+trait PathSegmentImpl[A]:
 
   /** implementation of [[urldsl.errors.PathMatchingError]] for type A. */
   implicit protected val pathError: PathMatchingError[A]
 
-  val root: PathSegment[Unit, A] = PathSegment.root
-  val remainingSegments: PathSegment[List[String], A] = PathSegment.remainingSegments
-  lazy val endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
-  lazy val noMatch: PathSegment[Unit, A] = PathSegment.noMatch[A]
+  final val root: PathSegment[Unit, A] = PathSegment.root
+  final val remainingSegments: PathSegment[List[String], A] = PathSegment.remainingSegments
+  final lazy val endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
+  final lazy val noMatch: PathSegment[Unit, A] = PathSegment.noMatch[A]
 
-  def segment[T](implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[T, A] =
+  final def segment[T](implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[T, A] =
     PathSegment.segment[T, A]
 
-  def oneOf[T](t: T, ts: T*)(implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[Unit, A] =
+  final def oneOf[T](t: T, ts: T*)(implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[Unit, A] =
     PathSegment.oneOf(t, ts: _*)
 
   /* I think this should not be necessary but the compiler has difficulties finding the correct error due to covariance */
-  implicit def unaryPathSegment[T](
+  final implicit def unaryPathSegment[T](
       t: T
   )(
-      implicit fromString: FromString[T, A],
+      using fromString: FromString[T, A],
       printer: Printer[T]
   ): PathSegment[Unit, A] =
     PathSegment.simplePathSegment(
@@ -55,13 +55,11 @@ trait PathSegmentImpl[A] {
       (_: Unit) => Segment(printer(t))
     )
 
-}
 
-object PathSegmentImpl {
+object PathSegmentImpl:
 
   /** Invoker. */
-  def apply[A](implicit error: PathMatchingError[A]): PathSegmentImpl[A] = new PathSegmentImpl[A] {
+  def apply[A](using error: PathMatchingError[A]): PathSegmentImpl[A] = new PathSegmentImpl[A] {
     implicit protected val pathError: PathMatchingError[A] = error
   }
 
-}

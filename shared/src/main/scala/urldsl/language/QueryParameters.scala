@@ -4,7 +4,7 @@ import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
+trait QueryParameters[Q, +A] extends UrlPart[Q, A]:
 
   import QueryParameters._
 
@@ -66,15 +66,15 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     * called, you can end up with "Q = (Int, String)" or "Q = (String, Int)". This property is called
     * "QuasiCommutativity" in the tests.
     */
-  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit ev: Tupler[Q, R]): QueryParameters[ev.Out, A1] =
+  final def &[R, A1 >: A](that: QueryParameters[R, A1])(using ev: Tupler[Q, R]): QueryParameters[ev.Out, A1] =
     factory[ev.Out, A1](
       (params: Map[String, Param]) =>
-        for {
+        for
           firstMatch <- this.matchParams(params)
           ParamMatchOutput(q, remainingParams) = firstMatch
           secondMatch <- that.matchParams(remainingParams)
           ParamMatchOutput(r, finalRemainingParams) = secondMatch
-        } yield ParamMatchOutput(ev(q, r), finalRemainingParams),
+        yield ParamMatchOutput(ev(q, r), finalRemainingParams),
       (out: ev.Out) => {
         val (q, r) = ev.unapply(out)
         this.createParams(q) ++ that.createParams(r)
@@ -118,16 +118,15 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
   )
 
   /** Sugar for when `A =:= DummyError`. */
-  final def filter(predicate: Q => Boolean)(implicit ev: A <:< DummyError): QueryParameters[Q, DummyError] = {
+  final def filter(predicate: Q => Boolean)(using ev: A <:< DummyError): QueryParameters[Q, DummyError] =
     type F[+E] = QueryParameters[Q, E]
     ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
-  }
 
   /**
     * Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
     * exception-free bijection between Q and R.
     */
-  final def as[R](implicit codec: Codec[Q, R]): QueryParameters[R, A] = factory(
+  final def as[R](using codec: Codec[Q, R]): QueryParameters[R, A] = factory(
     (matchParams _).andThen(_.map(_.map(codec.leftToRight))),
     (codec.rightToLeft _).andThen(createParams)
   )
@@ -143,9 +142,8 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
   ): PathQueryFragmentRepr[Unit, Nothing, Q, A, FragmentType, FragmentError] =
     new PathQueryFragmentRepr(PathSegment.root, this, fragment)
 
-}
 
-object QueryParameters {
+object QueryParameters:
 
   def factory[Q, A](
       matching: Map[String, Param] => Either[A, ParamMatchOutput[Q]],
@@ -167,7 +165,7 @@ object QueryParameters {
       paramName: String,
       matching: Param => Either[A, Q],
       creating: Q => Param
-  )(implicit paramMatchingError: ParamMatchingError[A]): QueryParameters[Q, A] = factory[Q, A](
+  )(using paramMatchingError: ParamMatchingError[A]): QueryParameters[Q, A] = factory[Q, A](
     (params: Map[String, Param]) =>
       params
         .get(paramName)
@@ -180,7 +178,7 @@ object QueryParameters {
   final def param[Q, A](
       paramName: String
   )(
-      implicit fromString: FromString[Q, A],
+      using fromString: FromString[Q, A],
       printer: Printer[Q],
       paramMatchingError: ParamMatchingError[A]
   ): QueryParameters[Q, A] =
@@ -196,7 +194,7 @@ object QueryParameters {
   final def listParam[Q, A](
       paramName: String
   )(
-      implicit fromString: FromString[Q, A],
+      using fromString: FromString[Q, A],
       printer: Printer[Q],
       paramMatchingError: ParamMatchingError[A]
   ): QueryParameters[List[Q], A] =
@@ -208,10 +206,10 @@ object QueryParameters {
           tail
             .map(fromString.apply)
             .foldLeft(fromString(head).map(List(_))) { (acc, next) =>
-              for {
+              for
                 firstResults <- acc
                 nextResult <- next
-              } yield nextResult +: firstResults
+              yield nextResult +: firstResults
             }
             .map(_.reverse)
       },
@@ -221,4 +219,3 @@ object QueryParameters {
   final lazy val dummyErrorImpl = QueryParametersImpl[DummyError]
   final lazy val simpleParamErrorImpl = QueryParametersImpl[SimpleParamMatchingError]
 
-}

@@ -6,8 +6,7 @@ package urldsl.errors
   *
   * @tparam A tye type of your error.
   */
-trait ErrorFromThrowable[A] {
+trait ErrorFromThrowable[A]:
 
   def fromThrowable(throwable: Throwable): A
 
-}

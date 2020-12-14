@@ -3,7 +3,7 @@ package urldsl.language
 import urldsl.errors.ParamMatchingError
 import urldsl.vocabulary.{FromString, Printer}
 
-trait QueryParametersImpl[A] {
+trait QueryParametersImpl[A]:
 
   implicit protected val queryError: ParamMatchingError[A]
 
@@ -15,21 +15,19 @@ trait QueryParametersImpl[A] {
 
   val ignore: QueryParameters[Unit, A] = QueryParameters.ignore
 
-  def param[Q](paramName: String)(implicit fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[Q, A] =
+  def param[Q](paramName: String)(using fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[Q, A] =
     QueryParameters.param(paramName)
 
   def listParam[Q](
       paramName: String
-  )(implicit fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[List[Q], A] =
+  )(using fromString: FromString[Q, A], printer: Printer[Q]): QueryParameters[List[Q], A] =
     QueryParameters.listParam(paramName)
 
-}
 
-object QueryParametersImpl {
+object QueryParametersImpl:
 
   /** Invoker */
-  def apply[A](implicit error: ParamMatchingError[A]): QueryParametersImpl[A] = new QueryParametersImpl[A] {
+  def apply[A](using error: ParamMatchingError[A]): QueryParametersImpl[A] = new QueryParametersImpl[A] {
     implicit protected val queryError: ParamMatchingError[A] = error
   }
 
-}

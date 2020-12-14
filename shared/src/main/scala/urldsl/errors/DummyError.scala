@@ -6,7 +6,7 @@ import urldsl.vocabulary.Segment
   */
 sealed trait DummyError
 
-object DummyError {
+object DummyError:
 
   object dummyError extends DummyError
 
@@ -41,4 +41,3 @@ object DummyError {
 
   implicit final lazy val dummyErrorIsFromThrowable: ErrorFromThrowable[DummyError] = (_: Throwable) => dummyError
 
-}

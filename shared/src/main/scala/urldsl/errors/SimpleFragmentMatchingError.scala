@@ -2,7 +2,7 @@ package urldsl.errors
 
 sealed trait SimpleFragmentMatchingError
 
-object SimpleFragmentMatchingError {
+object SimpleFragmentMatchingError:
   case object MissingFragmentError extends SimpleFragmentMatchingError
   case class WrongValue[T](actual: T, expected: T) extends SimpleFragmentMatchingError
   case class FromThrowable(throwable: Throwable) extends SimpleFragmentMatchingError
@@ -17,4 +17,3 @@ object SimpleFragmentMatchingError {
       def wrongValue[T](actual: T, expected: T): SimpleFragmentMatchingError = WrongValue(actual, expected)
       def fragmentWasPresent(value: String): SimpleFragmentMatchingError = FragmentWasPresent(value)
     }
-}

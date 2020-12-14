@@ -8,6 +8,5 @@ package urldsl.vocabulary
   * @param output the de-serialized element from the matching
   * @param unusedSegments the segments that were not used to generate the output
   */
-final case class PathMatchOutput[T](output: T, unusedSegments: List[Segment]) {
+final case class PathMatchOutput[T](output: T, unusedSegments: List[Segment]):
   def map[U](f: T => U): PathMatchOutput[U] = PathMatchOutput(f(output), unusedSegments)
-}

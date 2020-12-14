@@ -10,7 +10,7 @@ import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
   * A [[UrlPart]] is also able to generate its corresponding part of the URL by ingesting an element of type T. When
   * doing that, it outputs a String (whose semantic may vary depending on the type of [[UrlPart]] you are dealing with).
   */
-trait UrlPart[T, +E] {
+trait UrlPart[T, +E]:
 
   def matchRawUrl(
       url: String,
@@ -21,15 +21,14 @@ trait UrlPart[T, +E] {
   def createPart(t: T, encoder: UrlStringGenerator = UrlStringGenerator.default): String
 
   /** Sugar when T =:= Unit */
-  final def createPart(encoder: UrlStringGenerator)(implicit ev: Unit =:= T): String =
+  final def createPart(encoder: UrlStringGenerator)(using ev: Unit =:= T): String =
     createPart(ev(()), encoder)
 
   /** Sugar when T =:= Unit */
-  final def createPart()(implicit ev: Unit =:= T): String = createPart(ev(()))
+  final def createPart()(using ev: Unit =:= T): String = createPart(ev(()))
 
-}
 
-object UrlPart {
+object UrlPart:
 
   private[language] def factory[T, E](
       matcher: (String, UrlStringParserGenerator) => Either[E, T],
@@ -48,4 +47,3 @@ object UrlPart {
     */
   type SimpleUrlPart[T] = UrlPart[T, Any]
 
-}

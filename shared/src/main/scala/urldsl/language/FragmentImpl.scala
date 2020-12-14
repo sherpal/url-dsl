@@ -12,7 +12,7 @@ import scala.language.implicitConversions
   *
   * @tparam E type of the "pre-applied" errors
   */
-trait FragmentImpl[E] {
+trait FragmentImpl[E]:
 
   /** implementation of [[FragmentMatchingError]] for generating relevant matching errors. */
   implicit protected val fragmentError: FragmentMatchingError[E]
@@ -39,17 +39,15 @@ trait FragmentImpl[E] {
   final def emptyFragment: Fragment[Unit, E] = Fragment.empty
 
   implicit final def asFragment[T](t: T)(
-      implicit fromString: FromString[T, E],
+      using fromString: FromString[T, E],
       printer: Printer[T],
       classTag: ClassTag[T]
   ): Fragment[Unit, E] = Fragment.asFragment(t)
 
-}
 
-object FragmentImpl {
+object FragmentImpl:
 
   /** Summoner for a [[FragmentImpl]] instance, given the [[FragmentMatchingError]] error. */
-  def apply[E](implicit error: FragmentMatchingError[E]): FragmentImpl[E] = new FragmentImpl[E] {
+  def apply[E](using error: FragmentMatchingError[E]): FragmentImpl[E] = new FragmentImpl[E] {
     implicit protected val fragmentError: FragmentMatchingError[E] = error
   }
-}

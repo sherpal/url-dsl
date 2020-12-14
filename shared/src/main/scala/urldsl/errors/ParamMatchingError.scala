@@ -9,6 +9,5 @@ package urldsl.errors
   *
   * @tparam A the type of your error.
   */
-trait ParamMatchingError[A] {
+trait ParamMatchingError[A]:
   def missingParameterError(paramName: String): A
-}

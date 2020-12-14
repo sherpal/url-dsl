@@ -2,7 +2,7 @@ package urldsl.url
 
 import urldsl.vocabulary.{MaybeFragment, Param, Segment}
 
-trait UrlStringGenerator {
+trait UrlStringGenerator:
 
   def encode(str: String, encoding: String = "utf-8"): String
 
@@ -18,23 +18,19 @@ trait UrlStringGenerator {
       .flatMap { case (key, values) => values.map(value => s"$key=$value") }
       .mkString("&")
 
-  final def makeUrl(segments: List[Segment], params: Map[String, Param]): String = {
+  final def makeUrl(segments: List[Segment], params: Map[String, Param]): String =
     val paramsString = makeParams(params)
     val pathString = makePath(segments)
 
-    pathString + (if (paramsString.nonEmpty) "?" else "") + pathString
-  }
+    pathString + (if paramsString.nonEmpty then "?" else "") + pathString
 
-  final def makeFragment(maybeFragment: MaybeFragment): String = maybeFragment.value match {
+  final def makeFragment(maybeFragment: MaybeFragment): String = maybeFragment.value match
     case Some("")    => ""
     case Some(value) => "#" ++ encode(value)
     case None        => ""
-  }
 
-}
 
-object UrlStringGenerator extends DefaultUrlStringGenerator {
+object UrlStringGenerator extends DefaultUrlStringGenerator:
 
   val default: UrlStringGenerator = default0
 
-}

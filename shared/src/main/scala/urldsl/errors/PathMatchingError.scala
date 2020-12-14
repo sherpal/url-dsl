@@ -11,7 +11,7 @@ import urldsl.vocabulary.Segment
   *
   * @tparam A type of the error.
   */
-trait PathMatchingError[+A] {
+trait PathMatchingError[+A]:
 
   def malformed(str: String): A
   def endOfSegmentRequired(remainingSegments: List[Segment]): A
@@ -19,4 +19,3 @@ trait PathMatchingError[+A] {
   def missingSegment: A
   def unit: A
 
-}

@@ -2,7 +2,7 @@ package urldsl.url
 
 import java.net.{URL, URLDecoder}
 
-final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser {
+final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser:
 
   private val urlParser = new URL(rawUrl)
 
@@ -14,11 +14,9 @@ final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser {
   def maybeFragment: Option[String] = Option(urlParser.getRef).filter(_.nonEmpty)
 
   def decode(str: String, encoding: String): String = URLDecoder.decode(str, encoding)
-}
 
-object JavaNetUrlStringParser {
+object JavaNetUrlStringParser:
 
   final lazy val javaNetUrlStringParserGenerator: UrlStringParserGenerator =
     (rawUrl: String) => new JavaNetUrlStringParser(rawUrl)
 
-}

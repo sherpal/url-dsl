@@ -1,6 +1,6 @@
 package urldsl.url
 
-trait DefaultUrlStringGenerator {
+trait DefaultUrlStringGenerator:
 
   protected val default0: UrlStringGenerator = (str: String, encoding: String) =>
     java.net.URLEncoder
@@ -12,4 +12,3 @@ trait DefaultUrlStringGenerator {
       .replaceAll("%29", ")")
       .replaceAll("%7E", "~")
 
-}
