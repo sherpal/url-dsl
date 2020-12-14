@@ -25,7 +25,7 @@ final class CombinedExamples extends AnyFlatSpec with Matchers {
   val fragmentPart = fragment[String]
 
   "Some matching examples" should "work" in {
-
+    
     /** We can combine a [[urldsl.language.PathSegment]] and a [[urldsl.language.QueryParameters]] */
     (pathPart ? queryPart)
       .matchRawUrl(sampleUrl) should be(

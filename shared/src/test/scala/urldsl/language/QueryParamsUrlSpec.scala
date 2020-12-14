@@ -41,8 +41,8 @@ final class QueryParamsUrlSpec extends AnyFlatSpec with Matchers {
   "QueryParameters" should "correctly generate strings under `as` transformations" in {
 
     case class User(name: String, age: Int)
-    implicit val userCodec: Codec[(String, Int), User] =
-      Codec.factory((User.apply _).tupled, User.unapply _ andThen (_.get))
+    given Codec[(String, Int), User] =
+      Codec.factory(User.apply.tupled, User.unapply.andThen(user => (user.name, user.age)))
 
     (param[String]("name") & param[Int]("age")).as[User].params(User("Alice", 22)) should be(
       "name=Alice&age=22"

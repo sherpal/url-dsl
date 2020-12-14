@@ -60,13 +60,13 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     /** You can also "group" several segments into a more meaningful class than a pair or a triplet. */
     case class Stuff(str: String, j: Int)
 
-    (s1 / s2).as((Stuff.apply _).tupled, Stuff.unapply(_: Stuff).get).matchRawUrl(sampleUrl) should be(
+    (s1 / s2).as(Stuff.apply.tupled, Stuff.unapply.andThen(stuff => (stuff.str, stuff.j))).matchRawUrl(sampleUrl) should be(
       Right(Stuff("foo", 23))
     )
 
     /** Or conveniently with an implicit [[urldsl.vocabulary.Codec]] */
     implicit val stuffCodec: Codec[(String, Int), Stuff] =
-      Codec.factory((Stuff.apply _).tupled, Stuff.unapply(_: Stuff).get)
+      Codec.factory(Stuff.apply.tupled, Stuff.unapply.andThen(stuff => (stuff.str, stuff.j)))
 
     (s1 / s2).as[Stuff].matchRawUrl(sampleUrl) should be(Right(Stuff("foo", 23)))
 

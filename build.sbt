@@ -57,12 +57,12 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
   )
   .jvmSettings(
     libraryDependencies ++= List(
-      "org.scalatest" % "scalatest_2.13" % "3.2.2" % "test"
+      "org.scalatest" %% "scalatest" % "3.2.3" % "test"
     )
   )
   .jsSettings(
     libraryDependencies ++= List(
-      "org.scalatest" % "scalatest_sjs1_2.13" % "3.2.2" % "test"
+      "org.scalatest" %%% "scalatest" % "3.2.3" % "test"
     )
   )
 
