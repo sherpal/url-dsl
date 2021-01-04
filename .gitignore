@@ -2,6 +2,9 @@ target
 
 .DS_Store
 .idea
+.bsp
+.vscode
+project/project
 
 .bloop
 .metals
