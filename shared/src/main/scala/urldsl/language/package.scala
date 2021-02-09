@@ -12,8 +12,8 @@ import urldsl.errors.{
 
 package object language {
 
-  val dummyErrorImpl: AllImpl[DummyError, DummyError, DummyError] = AllImpl[DummyError, DummyError, DummyError]
-  val simpleErrorImpl: AllImpl[SimplePathMatchingError, SimpleParamMatchingError, SimpleFragmentMatchingError] =
+  lazy val dummyErrorImpl: AllImpl[DummyError, DummyError, DummyError] = AllImpl[DummyError, DummyError, DummyError]
+  lazy val simpleErrorImpl: AllImpl[SimplePathMatchingError, SimpleParamMatchingError, SimpleFragmentMatchingError] =
     AllImpl[SimplePathMatchingError, SimpleParamMatchingError, SimpleFragmentMatchingError]
 
 }
