@@ -163,6 +163,7 @@ The tupling of the type parameters works the same way as for path.
 There are two main built in query parameters that you can use as building blocks for most of yours needs:
 
 - `param[T](paramName: String)`: represents the value of the parameter with name `paramName` as a type `T` element
+- `param[T](paramName: String).?`: optional param, with value encoded as `Option[T]`
 - `listParam[T](paramName: Strig)`: same as `param` but for lists.
 
 #### Query parameters examples
