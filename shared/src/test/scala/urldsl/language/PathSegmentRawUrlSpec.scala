@@ -29,7 +29,7 @@ final class PathSegmentRawUrlSpec extends AnyFlatSpec with Matchers {
 
     val ls = List("car", "motorcycle")
 
-    (root / segment[String] / "bold" / remainingSegments).path(hello, ls) should be(
+    (root / segment[String] / "bold" / remainingSegments).path((hello, ls)) should be(
       s"$hello/bold/" + ls.mkString("/")
     )
 //

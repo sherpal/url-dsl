@@ -16,7 +16,7 @@ final class PathSegmentRawUrl extends Properties("PathSegmentRawUrl") {
   def pathSegmentFromList(segments: List[Segment]): PathSegment[Unit, DummyError] =
     segments.foldLeft(root)(_ / _.content)
 
-  property("StaticGeneration") = forAll(Gen.nonEmptyListOf(segmentGen)) { segments: List[Segment] =>
+  property("StaticGeneration") = forAll(Gen.nonEmptyListOf(segmentGen)) { (segments: List[Segment]) =>
     val path = pathSegmentFromList(segments)
 
     path.createPath() == UrlStringGenerator.default.makePath(segments)
