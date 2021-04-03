@@ -133,7 +133,7 @@ object Fragment {
       case MaybeFragment(None)           => Left(fragmentMatchingError.missingFragmentError)
       case MaybeFragment(Some(fragment)) => fromString(fragment)
     },
-    (printer.apply _).andThen(Some(_)).andThen(MaybeFragment)
+    (printer.apply _).andThen(Some(_)).andThen(MaybeFragment.apply)
   )
 
   /**

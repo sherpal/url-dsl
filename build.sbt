@@ -29,7 +29,7 @@ organization := "be.doeraene"
 inThisBuild(
   Def.settings(
     version := "0.3.2",
-    crossScalaVersions := Seq("2.13.4", "2.12.10"),
+    crossScalaVersions := Seq("3.0.0-RC2", "2.13.5", "2.12.13"),
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ++= Seq("-feature", "-deprecation")
   )
@@ -46,8 +46,8 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
     description := "A tiny library for parsing and creating urls in a type-safe way",
     licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php")),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.1.1" % "test",
-      "org.scalacheck" %%% "scalacheck" % "1.14.3" % "test"
+      "org.scalatest" %%% "scalatest" % "3.2.7" % "test",
+      "org.scalacheck" %%% "scalacheck" % "1.15.3" % "test"
     )
   )
 

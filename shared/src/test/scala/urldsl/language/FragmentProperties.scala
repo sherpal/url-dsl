@@ -11,8 +11,8 @@ import urldsl.language.Fragment.simpleFragmentErrorImpl._
 //noinspection TypeAnnotation
 final class FragmentProperties extends Properties("Fragment") {
 
-  val fragmentGen: Gen[MaybeFragment] = Gen.option(Gen.asciiStr).map(MaybeFragment)
-  val intFragmentGen: Gen[MaybeFragment] = Gen.chooseNum(-1000, 1000).map(_.toString).map(Some(_)).map(MaybeFragment)
+  val fragmentGen: Gen[MaybeFragment] = Gen.option(Gen.asciiStr).map(MaybeFragment.apply)
+  val intFragmentGen: Gen[MaybeFragment] = Gen.chooseNum(-1000, 1000).map(_.toString).map(Some(_)).map(MaybeFragment.apply)
 
   val nonIntFragmentGen: Gen[MaybeFragment] = fragmentGen.filter {
     case MaybeFragment(Some(value)) => Try(value.toInt).isFailure

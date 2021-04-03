@@ -42,7 +42,7 @@ final class QueryParamsUrlSpec extends AnyFlatSpec with Matchers {
 
     case class User(name: String, age: Int)
     implicit val userCodec: Codec[(String, Int), User] =
-      Codec.factory((User.apply _).tupled, User.unapply _ andThen (_.get))
+      Codec.factory((User.apply _).tupled, { case User(name, age) => (name, age) })
 
     (param[String]("name") & param[Int]("age")).as[User].params(User("Alice", 22)) should be(
       "name=Alice&age=22"
