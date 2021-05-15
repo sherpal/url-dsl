@@ -53,6 +53,11 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       */
     param[String]("does-not-exist").?.matchRawUrl(sampleUrl) should be(Right(None))
     param[String]("bar").?.matchRawUrl(sampleUrl) should be(Right(Some("stuff")))
+    param[String]("empty").?.matchRawUrl(sampleUrl) should be(Right(Some("")))
+    
+    /** Decoding failures on optional params result in None */
+    param[Int]("bar").?.matchRawUrl(sampleUrl) should be(Right(None))
+    param[Int]("empty").?.matchRawUrl(sampleUrl) should be(Right(None))
 
     /**
       * [[urldsl.language.QueryParameters]] have a filter method allowing to restrict the things it matches.

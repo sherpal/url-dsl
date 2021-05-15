@@ -24,6 +24,12 @@ final class QueryParamsUrlSpec extends AnyFlatSpec with Matchers {
 
     listParam[String]("names").params(List("Alice", "Bob")) should be("names=Alice&names=Bob")
 
+    (param[String]("name") & param[Int]("age").?).params("Hello", None) should be("name=Hello")
+    (param[String]("name") & param[Int]("age").?).params("Hello", Some(0)) should be("name=Hello&age=0")
+    (param[String]("name") & param[Int]("age").?).params("Hello", Some(1)) should be("name=Hello&age=1")
+    (param[String]("name") & param[String]("cat").?).params("Hello", Some("")) should be("name=Hello&cat=")
+    (param[String]("name") & param[String]("cat").?).params("Hello", Some("Fluffy")) should be("name=Hello&cat=Fluffy")
+    
     // demonstrates quasi commutativity
     (listParam[Int]("ages") & param[String]("name")).params(List(32, 23), "Bob") should be(
       "ages=32&ages=23&name=Bob"
