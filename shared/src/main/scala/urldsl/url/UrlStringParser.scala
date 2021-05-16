@@ -20,6 +20,6 @@ trait UrlStringParser extends UrlStringDecoder {
 
   final def segments: List[Segment] = decodePath(path)
   final def params: Map[String, Param] = decodeParams(queryParametersString)
-  final def maybeFragmentObj: MaybeFragment = MaybeFragment(maybeFragment)
+  final def maybeFragmentObj: MaybeFragment = MaybeFragment(maybeFragment.map(decode(_)))
 
 }
