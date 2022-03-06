@@ -24,7 +24,8 @@ final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
 object JSUrlStringParser {
 
-  final lazy val jsUrlStringParserGenerator: UrlStringParserGenerator =
-    (rawUrl: String) => new JSUrlStringParser(rawUrl)
+  final lazy val jsUrlStringParserGenerator: UrlStringParserGenerator = new UrlStringParserGenerator {
+    def parser(rawUrl: String): UrlStringParser = new JSUrlStringParser(rawUrl)
+  }
 
 }

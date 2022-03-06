@@ -18,7 +18,8 @@ final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
 object JavaNetUrlStringParser {
 
-  final lazy val javaNetUrlStringParserGenerator: UrlStringParserGenerator =
-    (rawUrl: String) => new JavaNetUrlStringParser(rawUrl)
+  final lazy val javaNetUrlStringParserGenerator: UrlStringParserGenerator = new UrlStringParserGenerator {
+    def parser(rawUrl: String): UrlStringParser = new JavaNetUrlStringParser(rawUrl)
+  }
 
 }

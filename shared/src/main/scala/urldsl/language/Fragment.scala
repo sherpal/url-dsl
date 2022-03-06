@@ -26,7 +26,7 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
   def matchFragment(maybeFragment: MaybeFragment): Either[E, T]
 
   def matchRawUrl(url: String, urlStringParserGenerator: UrlStringParserGenerator): Either[E, T] =
-    matchFragment(MaybeFragment(urlStringParserGenerator.parser(url).maybeFragment))
+    matchFragment(urlStringParserGenerator.parser(url).maybeFragmentObj)
 
   /**
     * Creates a fragment information from an instance of T.
