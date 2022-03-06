@@ -1,5 +1,6 @@
 package urldsl.language
 
+import org.scalacheck.Prop.forAllNoShrink
 import org.scalacheck._
 import urldsl.errors.DummyError
 import urldsl.vocabulary.{Param, ParamMatchOutput}
@@ -43,5 +44,16 @@ final class QueryParameterProperties extends Properties("QueryParameters") {
     param[Int]("x").filter(filtering).matchParams(params) ==
       (if (filtering(x)) Right(ParamMatchOutput(x, Map())) else Left(DummyError.dummyError))
   }
+
+  property("'foo=' returns empty strings") =
+    forAllNoShrink(Gen.alphaNumStr.filter(_.nonEmpty).filterNot(_.head.isDigit)) { (key: String) =>
+      val p = param[String](key)
+
+      val firstResult = p.matchRawUrl(s"http://localhost:8080/stuff?$key=").toOption
+      val secondResult = p.matchRawUrl(s"http://www.my-website.com/stuff?$key=&other=2").toOption
+      (Prop(firstResult.contains("")) && Prop(secondResult.contains(""))) :|
+        s"""$firstResult
+           |$secondResult""".stripMargin
+    }
 
 }
