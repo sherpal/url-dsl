@@ -28,7 +28,7 @@ organization := "be.doeraene"
 
 inThisBuild(
   Def.settings(
-    version := "0.4.0",
+    version := "0.5.0",
     crossScalaVersions := Seq("3.0.0", "2.13.5", "2.12.13"),
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ++= Seq("-feature", "-deprecation")
