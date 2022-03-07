@@ -27,7 +27,7 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     (root / "foo").matchRawUrl(sampleUrl) should be(Right(()))
 
     /**
-      * Appending a [[String]] segmennt in order to retrieve the information contained in the first segment.
+      * Appending a [[String]] segment in order to retrieve the information contained in the first segment.
       */
     (root / segment[String]).matchRawUrl(sampleUrl) should be(Right("foo"))
 
@@ -107,6 +107,17 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
           )
         )
       )
+    )
+
+    /**
+      * Sometimes, you might want to feed some known information into a generic path segment.
+      * For example, you have a path segment representing a [[java.lang.String]], but you want
+      * to specify that string in a special case. The [[urldsl.language.PathSegment.provide]]
+      * method does that for you.
+      */
+    (root / segment[String] / 23).provide("foo").matchRawUrl(sampleUrl) should be(Right(()))
+    (root / segment[String] / 23).provide("not-good").matchRawUrl(sampleUrl) should be(
+      Left(SimplePathMatchingError.WrongValue("not-good", "foo"))
     )
 
   }
