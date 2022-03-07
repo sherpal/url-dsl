@@ -60,7 +60,7 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     /** You can also "group" several segments into a more meaningful class than a pair or a triplet. */
     case class Stuff(str: String, j: Int)
 
-    (s1 / s2).as((t: (String, Int)) => Stuff(t._1, t._2), (s: Stuff) => s match { case Stuff(str, j) => (str, j) }).matchRawUrl(sampleUrl) should be(
+    (s1 / s2).transform(t => Stuff(t._1, t._2))({ case Stuff(str, j) => (str, j) }).matchRawUrl(sampleUrl) should be(
       Right(Stuff("foo", 23))
     )
 

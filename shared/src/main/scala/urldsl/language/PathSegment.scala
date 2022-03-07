@@ -156,13 +156,17 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
     * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
     * bijection between T and U (or at least an embedding, if you know that you are doing).
     */
-  final def as[U](implicit codec: Codec[T, U]): PathSegment[U, A] = as[U](codec.leftToRight _, codec.rightToLeft _)
+  final def as[U](implicit codec: Codec[T, U]): PathSegment[U, A] =
+    transform((t: T) => codec.leftToRight(t))((u: U) => codec.rightToLeft(u))
+
+  @deprecated(s"Replaced by `transform`.", "0.5.0")
+  final def as[U](fromTToU: T => U, fromUToT: U => T): PathSegment[U, A] = transform(fromTToU)(fromUToT)
 
   /**
     * Casts this [[PathSegment]] to the new type U. The conversion functions should form an exception-free bijection
     * between T and U (or at least an embedding, if you know that you are doing).
     */
-  final def as[U](fromTToU: T => U, fromUToT: U => T): PathSegment[U, A] = PathSegment.factory[U, A](
+  final def transform[U](fromTToU: T => U)(fromUToT: U => T): PathSegment[U, A] = PathSegment.factory[U, A](
     (matchSegments _).andThen(_.map(_.map(fromTToU))),
     fromUToT.andThen(createSegments)
   )
