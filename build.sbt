@@ -12,16 +12,6 @@ ThisBuild / organization := "be.doeraene"
 ThisBuild / sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
 ThisBuild / description := "A tiny library for parsing and creating urls in a type-safe way"
 ThisBuild / licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
-//ThisBuild / homepage := Some(new java.net.URL("https://github.com/sherpal/url-dsl"))
-//ThisBuild / developers := List(
-//  Developer(
-//    "sherpal",
-//    "Antoine Doeraene",
-//    "antoine.doeraene@gmail.com",
-//    new java.net.URL("https://github.com/sherpal")
-//  )
-//)
-//ThisBuild / homepage := Some(url("https://github.com/sherpal/url-dsl"))
 
 sonatypeProjectHosting := Some(GitHubHosting("sherpal", "url-dsl", "antoine.doeraene@gmail.com"))
 organization := "be.doeraene"
@@ -50,6 +40,3 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
       "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test"
     )
   )
-
-val sharedJvm = shared.jvm
-val sharedJS = shared.js
