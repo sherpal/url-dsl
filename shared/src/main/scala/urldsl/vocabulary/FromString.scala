@@ -40,5 +40,7 @@ object FromString extends FromStringWithNumeric {
         case Failure(_)    => Left(fromThrowable.fromThrowable(new Exception(s"$s is not a Boolean")))
       }
   )
+  implicit def uuidFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[java.util.UUID, A] =
+    factory(s => Try(java.util.UUID.fromString(s)).toEither.left.map(fromThrowable.fromThrowable))
 
 }

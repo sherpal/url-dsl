@@ -14,12 +14,17 @@ object Printer {
 
   def factory[T](printing: T => String): Printer[T] = (t: T) => printing(t)
 
-  implicit def stringPrinter: Printer[String] = factory(identity)
-  implicit def intPrinter: Printer[Int] = factory(_.toString)
-  implicit def longPrinter: Printer[Long] = factory(_.toString)
-  implicit def booleanPrinter: Printer[Boolean] = factory(_.toString)
-  implicit def doublePrinter: Printer[Double] = factory(_.toString)
-  implicit def bigIntPrinter: Printer[BigInt] = factory(_.toString)
-  implicit def floatPrinter: Printer[Float] = factory(_.toString)
+  private class ToStringPrinter[T] extends Printer[T] {
+    def print(t: T): String = t.toString
+  }
+
+  implicit def stringPrinter: Printer[String] = new ToStringPrinter
+  implicit def intPrinter: Printer[Int] = new ToStringPrinter
+  implicit def longPrinter: Printer[Long] = new ToStringPrinter
+  implicit def booleanPrinter: Printer[Boolean] = new ToStringPrinter
+  implicit def doublePrinter: Printer[Double] = new ToStringPrinter
+  implicit def bigIntPrinter: Printer[BigInt] = new ToStringPrinter
+  implicit def floatPrinter: Printer[Float] = new ToStringPrinter
+  implicit def uuidPrinter: Printer[java.util.UUID] = new ToStringPrinter
 
 }

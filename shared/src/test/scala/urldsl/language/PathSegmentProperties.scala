@@ -106,4 +106,10 @@ final class PathSegmentProperties extends Properties("PathSegment") {
       path.matchSegments(List(Segment(str))).isRight == choices.contains(str)
   }
 
+  property("uuids can roundtrip") = forAll(Arbitrary.arbUuid.arbitrary) { (uuid: java.util.UUID) =>
+    val path = $ / segment[java.util.UUID] / "hello"
+
+    path.matchRawUrl("http://some-domain.com/" ++ path.createPath(uuid)) == Right(uuid)
+  }
+
 }
