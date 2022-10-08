@@ -15,3 +15,4 @@ project/metals.sbt
 
 */target
 target/metals.sbt
+/null
