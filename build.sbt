@@ -28,7 +28,11 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
       "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
       "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test"
     )
+  ).jvmSettings(
+    publish / skip := true
   )
 
-val sharedJvm = shared.jvm
-val sharedJS = shared.js
+lazy val root = project.in(file("."))
+  .aggregate(shared.js, shared.jvm).settings(
+    publish / skip := true,
+  )
