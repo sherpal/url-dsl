@@ -28,8 +28,6 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
       "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
       "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test"
     )
-  ).jvmSettings(
-    publish / skip := true
   )
 
 lazy val root = project.in(file("."))
