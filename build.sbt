@@ -20,9 +20,10 @@ inThisBuild(List(
   scalacOptions ++= Seq("-feature", "-deprecation"),
 ))
 
-lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
+lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
-  .in(file("shared"))
+  .in(file("url-dsl"))
+  .settings(name := "url-dsl")
   .settings(
     libraryDependencies ++= Seq(
       "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
@@ -31,6 +32,6 @@ lazy val `shared` = crossProject(JSPlatform, JVMPlatform)
   )
 
 lazy val root = project.in(file("."))
-  .aggregate(shared.js, shared.jvm).settings(
+  .aggregate(`url-dsl`.js, `url-dsl`.jvm).settings(
     publish / skip := true,
   )
