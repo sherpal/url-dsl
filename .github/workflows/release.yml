@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    branches: [master, main]
+    branches: [master]
     tags: ["*"]
 jobs:
   publish:
@@ -11,6 +11,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: olafurpg/setup-scala@v13
+      - name: Run tests
+        run: sbt +test
       - run: sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
