@@ -87,8 +87,8 @@ or an error of type `A` (if the segment could not retrieve the information).
 
 `PathSegment`s are immutable objects that can be composed together with the `/` operator. This operator is associative
 and creates, given two `PathSegment`s with type parameters `T` and `U`, will create a `PathSegment` with type parameter,
-roughly, `(T, U)` (with some additional rules described in the `Tupler` class that, without entering details, flattens
-the tuples and remove `Unit`s). So if `T =:= (String, Int)` and `U =:= (String, Double)`, you'll get the type
+roughly, `(T, U)` (with some additional rules described in the `Composition` class that, without entering details, flattens
+the tuples and removes `Unit`s). So if `T =:= (String, Int)` and `U =:= (String, Double)`, you'll get the type
 `(String, Int, String, Double)`.
 
 When a `PathSegment` matches a URL, it internally receives the list of `Segment`s, consumes one or several of them, and
@@ -277,6 +277,10 @@ import urldsl.language.dummyErrorImpl._
 ## A router example
 
 url-dsl was thought with one possible goal in mind, the one of creating a routing system. An example of how to do that can be found [here](shared/src/test/scala/urldsl/examples/RouterUseCaseExample.scala).
+
+## Moving from 0.4.x to 0.5.x
+
+In 0.5.0 we replaced our `Tupler` with the `Composition` type from the [tuplez](https://github.com/tulz-app/tuplez) library. It works exactly the same for most use cases, but if your data types are complex enough that URL-DSL previously gave you nested tuples, those tuples will generally be flattened now.
 
 ## Moving from 0.2.0 to 0.3.x
 

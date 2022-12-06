@@ -4,6 +4,8 @@ import urldsl.errors.{DummyError, ErrorFromThrowable, PathMatchingError, SimpleP
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
+import app.tulz.tuplez.Composition
+
 import scala.language.implicitConversions
 
 /**
@@ -84,20 +86,20 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   final def createPart(t: T, encoder: UrlStringGenerator): String = createPath(t, encoder)
 
   /**
-    * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Tupler]]
+    * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Composition]]
     * rules.
     */
-  final def /[U, A1 >: A](that: PathSegment[U, A1])(implicit ev: Tupler[T, U]): PathSegment[ev.Out, A1] =
-    PathSegment.factory[ev.Out, A1](
+  final def /[U, A1 >: A](that: PathSegment[U, A1])(implicit c: Composition[T, U]): PathSegment[c.Composed, A1] =
+    PathSegment.factory[c.Composed, A1](
       (segments: List[Segment]) =>
         for {
           firstOut <- this.matchSegments(segments)
           PathMatchOutput(t, remaining) = firstOut
           secondOut <- that.matchSegments(remaining)
           PathMatchOutput(u, lastRemaining) = secondOut
-        } yield PathMatchOutput(ev(t, u), lastRemaining),
-      (out: ev.Out) => {
-        val (t, u) = ev.unapply(out)
+        } yield PathMatchOutput(c.compose(t, u), lastRemaining),
+      (out: c.Composed) => {
+        val (t, u) = c.unapply(out)
 
         this.createSegments(t) ++ that.createSegments(u)
       }

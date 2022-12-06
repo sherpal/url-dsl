@@ -1,5 +1,6 @@
 package urldsl.language
 
+import app.tulz.tuplez.Composition
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
@@ -74,12 +75,12 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
 
   def &[OtherParamsType, ParamsError1 >: ParamsError](otherParams: QueryParameters[OtherParamsType, ParamsError1])(
       implicit
-      ev: Tupler[ParamsType, OtherParamsType]
-  ): PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError1] =
-    new PathSegmentWithQueryParams[PathType, PathError, ev.Out, ParamsError1](
+      c: Composition[ParamsType, OtherParamsType]
+  ): PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError1] =
+    new PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError1](
       pathSegment,
       (queryParams & otherParams)
-        .asInstanceOf[QueryParameters[ev.Out, ParamsError1]] // not necessary but IntelliJ complains.
+        .asInstanceOf[QueryParameters[c.Composed, ParamsError1]] // not necessary but IntelliJ complains.
     )
 
   def withFragment[FragmentType, FragmentError](
