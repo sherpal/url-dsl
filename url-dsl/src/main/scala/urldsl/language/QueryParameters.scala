@@ -1,5 +1,6 @@
 package urldsl.language
 
+import app.tulz.tuplez.Composition
 import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
@@ -59,24 +60,24 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     createParamsString(q, encoder)
 
   /**
-    * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[urldsl.language.Tupler]]
+    * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[Composition]]
     *
     * The matching and writing of strings is functionally commutative under `&`, but the returned type `Q` is not. So,
     * if you have two parameters, one matching an Int and the other one a String, depending on the order in which `&` is
     * called, you can end up with "Q = (Int, String)" or "Q = (String, Int)". This property is called
     * "QuasiCommutativity" in the tests.
     */
-  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit ev: Tupler[Q, R]): QueryParameters[ev.Out, A1] =
-    factory[ev.Out, A1](
+  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit c: Composition[Q, R]): QueryParameters[c.Composed, A1] =
+    factory[c.Composed, A1](
       (params: Map[String, Param]) =>
         for {
           firstMatch <- this.matchParams(params)
           ParamMatchOutput(q, remainingParams) = firstMatch
           secondMatch <- that.matchParams(remainingParams)
           ParamMatchOutput(r, finalRemainingParams) = secondMatch
-        } yield ParamMatchOutput(ev(q, r), finalRemainingParams),
-      (out: ev.Out) => {
-        val (q, r) = ev.unapply(out)
+        } yield ParamMatchOutput(c.compose(q, r), finalRemainingParams),
+      (out: c.Composed) => {
+        val (q, r) = c.unapply(out)
         this.createParams(q) ++ that.createParams(r)
       }
     )

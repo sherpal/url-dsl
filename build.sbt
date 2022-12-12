@@ -26,6 +26,7 @@ lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
   .settings(name := "url-dsl")
   .settings(
     libraryDependencies ++= Seq(
+      "app.tulz" %%% "tuplez-full-light" % "0.4.0-M1",
       "org.scalatest" %%% "scalatest" % "3.2.9" % "test",
       "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test"
     )

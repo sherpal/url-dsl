@@ -3,6 +3,8 @@ package urldsl.language
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import urldsl.examples.{intTupleFromDashedString, intTupleDashedPrinter}
+
 class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
 
   import urldsl.language.PathSegment.simplePathErrorImpl._
@@ -10,6 +12,8 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
   import urldsl.vocabulary.Segment
   import urldsl.vocabulary.Param
   import urldsl.vocabulary.UrlMatching
+
+  private val sampleUrl = "http://localhost:8080/hello/2019/january?age=10&tuple=44-55&drinks=orange%20juice&drinks=water"
 
   "Readme example" should "work" in {
     val path = root / "hello" / segment[Int] / segment[String] / endOfSegments
@@ -23,9 +27,15 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
     ) should be(Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water")))))
 
     pathWithParams.matchRawUrl(
-      "http://localhost:8080/hello/2019/january?age=10&drinks=orange%20juice&drinks=water"
+      sampleUrl
     ) should be(
       Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
+    )
+
+    (pathWithParams & param[(Int, Int)]("tuple")).matchRawUrl(
+      sampleUrl
+    ) should be(
+      Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"), 44, 55)))
     )
 
     path.matchSegments(

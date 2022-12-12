@@ -3,6 +3,7 @@ package urldsl.examples
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.SimpleParamMatchingError
+import urldsl.language.QueryParameters
 
 /**
   * This class exposes some example of usage of the [[urldsl.language.QueryParameters]] class.
@@ -30,6 +31,9 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     /** But you can always match the same parameter as a string. */
     param[String]("ok").matchRawUrl(sampleUrl) should be(Right("true"))
 
+    /** Parameter encoding a tuple */
+    param[(Int, Int)]("tuple").matchRawUrl(sampleUrl) should be(Right((11, 22)))
+
     /**
       * Sometimes parameters are actually a list of parameters with the same key. You can read this as well.
       * Note that we sort the list for the check, since the actual order is somewhat unpredictable (although
@@ -42,10 +46,15 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       Right(("stuff", "other stuff"))
     )
 
+    /** Composing with a tupled parameter */
+    (param[String]("ok") & param[(Int, Int)]("tuple")).matchRawUrl(sampleUrl) should be(Right(("true", 11, 22)))
+    (param[(Int, Int)]("tuple") & param[String]("ok")).matchRawUrl(sampleUrl) should be(Right((11, 22, "true")))
+
     /** Swapping the operands will match the same query strings, but the output is interchanged! */
     (param[String]("babar") & param[String]("bar")).matchRawUrl(sampleUrl) should be(
       Right(("other stuff", "stuff"))
     )
+
 
     /**
       * If you want your parameters to match optionally, you can ascribe your [[urldsl.language.QueryParameters]] with
@@ -54,7 +63,9 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     param[String]("does-not-exist").?.matchRawUrl(sampleUrl) should be(Right(None))
     param[String]("bar").?.matchRawUrl(sampleUrl) should be(Right(Some("stuff")))
     param[String]("empty").?.matchRawUrl(sampleUrl) should be(Right(Some("")))
-    
+
+    param[(Int, Int)]("tuple").?.matchRawUrl(sampleUrl) should be(Right(Some((11, 22))))
+
     /** Decoding failures on optional params result in None */
     param[Int]("bar").?.matchRawUrl(sampleUrl) should be(Right(None))
     param[Int]("empty").?.matchRawUrl(sampleUrl) should be(Right(None))
@@ -117,10 +128,39 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       """p1=a%20string&p2=24"""
     )
 
+    /** Flatenning of tuple param */
+    (param[String]("p1") & param[(Int, Int)]("p2") & param[Int]("p3")).createPart(("a string", 11, 22, 24)) should be(
+      """p1=a%20string&p2=11-22&p3=24"""
+    )
+
     (param[String]("p1") & listParam[String]("p2")).createPart(("hey", List("one", "two"))) should be(
       """p1=hey&p2=one&p2=two"""
     )
 
+    /** Flatenning of tuple param */
+    (param[String]("p1") & param[(Int, Int)]("p2") & listParam[String]("p3")).createPart(("hey", 11, 22, List("one", "two"))) should be(
+      """p1=hey&p2=11-22&p3=one&p3=two"""
+    )
+
+  }
+
+  "No apparent limit to tuple composition" should "compile" in {
+    listParam[String]("a").? &
+      param[String]("b") &
+      param[String]("c") &
+      param[String]("d").? &
+      param[String]("e") &
+      param[String]("f") &
+      param[String]("g") &
+      listParam[String]("h") &
+      param[String]("i") &
+      param[String]("j") &
+      param[Int]("k") &
+      param[Int]("l") &
+      param[String]("m") &
+      param[String]("n") &
+      param[String]("o") &
+      param[String]("p")
   }
 
 }

@@ -132,6 +132,9 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
       )
     )
 
+    /** Flattening of int-tuple segment with [[app.tulz.tuplez.Composition]] */
+    (root / segment[String] / segment[(Int, Int)] / "hey").matchPath("hello/22-33/hey") should be(Right("hello", 22, 33))
+
   }
 
   "Some generating examples" should "work" in {
@@ -143,6 +146,8 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
       */
     (root / segment[String] / segment[Int] / "hey").createPart(("hello", 22)) should be("hello/22/hey")
 
+    /** Flattening of int-tuple segment with [[app.tulz.tuplez.Composition]] */
+    (root / segment[String] / segment[(Int, Int)] / "hey").createPart(("hello", 22, 33)) should be("hello/22-33/hey")
   }
 
 }
