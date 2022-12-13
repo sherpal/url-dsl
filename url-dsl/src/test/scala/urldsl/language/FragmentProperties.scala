@@ -2,8 +2,8 @@ package urldsl.language
 
 import org.scalacheck._
 import org.scalacheck.Prop._
-import urldsl.errors.SimpleFragmentMatchingError
-import urldsl.vocabulary.MaybeFragment
+import urldsl.errors.{DummyError, ErrorFromThrowable, SimpleFragmentMatchingError}
+import urldsl.vocabulary.{Codec, MaybeFragment}
 
 import scala.util.Try
 import urldsl.language.Fragment.simpleFragmentErrorImpl._
@@ -11,8 +11,11 @@ import urldsl.language.Fragment.simpleFragmentErrorImpl._
 //noinspection TypeAnnotation
 final class FragmentProperties extends Properties("Fragment") {
 
+  def error = SimpleFragmentMatchingError.itIsFragmentMatchingError
+
   val fragmentGen: Gen[MaybeFragment] = Gen.option(Gen.asciiStr).map(MaybeFragment.apply)
-  val intFragmentGen: Gen[MaybeFragment] = Gen.chooseNum(-1000, 1000).map(_.toString).map(Some(_)).map(MaybeFragment.apply)
+  val intFragmentGen: Gen[MaybeFragment] =
+    Gen.chooseNum(-1000, 1000).map(_.toString).map(Some(_)).map(MaybeFragment.apply)
 
   val nonIntFragmentGen: Gen[MaybeFragment] = fragmentGen.filter {
     case MaybeFragment(Some(value)) => Try(value.toInt).isFailure
@@ -23,6 +26,10 @@ final class FragmentProperties extends Properties("Fragment") {
   val maybeStringFragment = maybeFragment[String]
   val intFragment = fragment[Int]
   val maybeIntFragment = maybeFragment[Int]
+
+  property("MaybeFragment representation has an #") = forAll(fragmentGen) { (fragment: MaybeFragment) =>
+    fragment.representation == fragment.value.fold("")("#" ++ _)
+  }
 
   property("fragment gen sometimes generate empty fragment") = exists(fragmentGen)(_.isEmpty)
 
@@ -78,6 +85,56 @@ final class FragmentProperties extends Properties("Fragment") {
   property("Matching is the left inverse for generating in int fragment") = forAll(Gen.chooseNum(-1000, 1000)) {
     (fragment: Int) =>
       intFragment.matchFragment(intFragment.createFragment(fragment)) == Right(fragment)
+  }
+
+  property("Constant fragment can use sugar method") = forAll(Gen.choose(-1000, 1000)) { (x: Int) =>
+    (x: Fragment[Unit, DummyError]).fragmentString() == s"#$x"
+  }
+
+  property("as method works for bijection") = forAll(Gen.choose(0, 1000)) { (x: Int) =>
+    case class Container(y: Int)
+
+    implicit def codec: Codec[Int, Container] = Codec.factory(Container.apply, _.y)
+
+    intFragment.as[Container].fragmentString(Container(x)) == s"#$x"
+
+  }
+
+  property("Filtering non positive ints") = forAll(Gen.option(Gen.choose(-1000, 1000))) { (maybeX: Option[Int]) =>
+    case class PosInt(value: Int)
+    implicit def codec: Codec[Int, PosInt] = Codec.factory(PosInt.apply, _.value)
+
+    val predicate: Int => Boolean = _ > 0
+
+    Prop(
+      intFragment
+        .filter(predicate, _ => ErrorFromThrowable[SimpleFragmentMatchingError].fromThrowable(new IllegalArgumentException("Non positive number")))
+        .as[PosInt]
+        .?
+        .matchFragment(MaybeFragment(maybeX.map(_.toString))) == Right(maybeX.filter(predicate).map(PosInt.apply))
+    ) && Prop(
+      intFragment.?.createFragment(maybeX) == MaybeFragment(maybeX.map(_.toString))
+    )
+  }
+
+  property("Get or else on positive ints caps to 1") = forAll(Gen.option(Gen.choose(-1000, 1000))) { (maybeX: Option[Int]) =>
+    case class PosInt(value: Int)
+    val one = PosInt(1)
+
+    implicit def codec: Codec[Int, PosInt] = Codec.factory(PosInt.apply, _.value)
+
+    val predicate: Int => Boolean = _ > 0
+
+    val fragment = intFragment
+      .filter(predicate, _ => ErrorFromThrowable[SimpleFragmentMatchingError].fromThrowable(new IllegalArgumentException("Non positive number")))
+      .as[PosInt]
+      .?.getOrElse(one)
+
+    Prop(
+      fragment.matchFragment(MaybeFragment(maybeX.map(_.toString))) == Right(maybeX.filter(predicate).map(PosInt.apply).getOrElse(one))
+    ) && Prop(
+      fragment.createFragment(maybeX.fold(one)(PosInt.apply)) == MaybeFragment(maybeX.map(_.toString).orElse(Some("1")))
+    )
   }
 
 }
