@@ -16,7 +16,7 @@ final class FromString213Spec extends AnyFlatSpec with Matchers {
 
         getTheT[Int]("123") should be (Right(123))
 
-        getTheT[Double]("Hi") should be (Left(DummyError.dummyError))
+        getTheT[BigInt]("Hi") should be (Left(DummyError.dummyError))
 
     }
 

@@ -88,7 +88,7 @@ final class FragmentProperties extends Properties("Fragment") {
   }
 
   property("Constant fragment can use sugar method") = forAll(Gen.choose(-1000, 1000)) { (x: Int) =>
-    (x: Fragment[Unit, DummyError]).fragmentString() == s"#$x"
+    Fragment.asFragment[Int, DummyError](x).fragmentString() == s"#$x"
   }
 
   property("as method works for bijection") = forAll(Gen.choose(0, 1000)) { (x: Int) =>

@@ -14,9 +14,9 @@ final class FromString3Spec extends AnyFlatSpec with Matchers {
             Right(BigInt("123456789012345678901234567890"))
         )
 
-        getTheT[Int]("123") should be (Right(123))
+        getTheT[BigDecimal]("123.4") should be (Right(BigDecimal(123.4)))
 
-        getTheT[Double]("Hi") should be (Left(DummyError.dummyError))
+        getTheT[BigInt]("Hi") should be (Left(DummyError.dummyError))
 
     }
 
