@@ -1,10 +1,7 @@
 package urldsl.url
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-
 //noinspection TypeAnnotation
-final class UrlParserSpec extends AnyFlatSpec with Matchers {
+final class UrlParserSpec extends munit.FunSuite {
 
   val parserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
 
@@ -14,16 +11,16 @@ final class UrlParserSpec extends AnyFlatSpec with Matchers {
 
   val hashtagEndingUrl = sampleUrl ++ "#"
 
-  "A url without fragment" should "issue None when parsing" in {
-    parserGenerator.parser(sampleUrl).maybeFragment should be(None)
+  test("A url without fragment should issue None when parsing") {
+    assertEquals(parserGenerator.parser(sampleUrl).maybeFragment, None)
   }
 
-  "A url with fragment" should "issue some when parsing" in {
-    parserGenerator.parser(sampleUrlWithFragment).maybeFragment should be(Some(fragment))
+  test("A url with fragment should issue some when parsing") {
+    assertEquals(parserGenerator.parser(sampleUrlWithFragment).maybeFragment, Some(fragment))
   }
 
-  "A url ending with #" should "issue None when parsing" in {
-    parserGenerator.parser(hashtagEndingUrl).maybeFragment should be(None)
+  test("A url ending with # should issue None when parsing") {
+    assertEquals(parserGenerator.parser(hashtagEndingUrl).maybeFragment, None)
   }
 
 }
