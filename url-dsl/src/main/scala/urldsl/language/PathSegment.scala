@@ -99,7 +99,7 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
           PathMatchOutput(u, lastRemaining) = secondOut
         } yield PathMatchOutput(c.compose(t, u), lastRemaining),
       (out: c.Composed) => {
-        val (t, u) = c.unapply(out)
+        val (t, u) = c.decompose(out)
 
         this.createSegments(t) ++ that.createSegments(u)
       }

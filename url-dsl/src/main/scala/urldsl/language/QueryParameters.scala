@@ -77,7 +77,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
           ParamMatchOutput(r, finalRemainingParams) = secondMatch
         } yield ParamMatchOutput(c.compose(q, r), finalRemainingParams),
       (out: c.Composed) => {
-        val (q, r) = c.unapply(out)
+        val (q, r) = c.decompose(out)
         this.createParams(q) ++ that.createParams(r)
       }
     )
