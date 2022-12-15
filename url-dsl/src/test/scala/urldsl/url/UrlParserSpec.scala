@@ -23,4 +23,15 @@ final class UrlParserSpec extends munit.FunSuite {
     assertEquals(parserGenerator.parser(hashtagEndingUrl).maybeFragment, None)
   }
 
+  test("MaybeRef is the same as MaybeFragment") {
+    assertEquals(
+      parserGenerator.parser(hashtagEndingUrl).maybeFragment,
+      parserGenerator.parser(hashtagEndingUrl).maybeRef
+    )
+    assertEquals(
+      parserGenerator.parser(sampleUrlWithFragment).maybeFragment,
+      parserGenerator.parser(sampleUrlWithFragment).maybeRef
+    )
+  }
+
 }
