@@ -47,11 +47,11 @@ lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
   )
   .jvmSettings(
     coverageFailOnMinimum := true,
-    coverageMinimumStmtTotal := 100,
+    coverageMinimumStmtTotal := 99,
     coverageMinimumBranchTotal := 100,
-    coverageMinimumStmtPerPackage := 100,
+    coverageMinimumStmtPerPackage := 80,
     coverageMinimumBranchPerPackage := 100,
-    coverageMinimumStmtPerFile := 100,
+    coverageMinimumStmtPerFile := 60,
     coverageMinimumBranchPerFile := 100
   )
 
