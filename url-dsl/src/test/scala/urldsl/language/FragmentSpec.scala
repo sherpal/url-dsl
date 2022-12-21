@@ -4,25 +4,32 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.{FragmentMatchingError, SimpleFragmentMatchingError}
 import urldsl.language.Fragment.simpleFragmentErrorImpl._
-import urldsl.vocabulary.MaybeFragment
+import urldsl.vocabulary.{FromString, MaybeFragment}
 
-final class FragmentSpec extends AnyFlatSpec with Matchers {
+final class FragmentSpec extends munit.FunSuite {
 
-  val fragment: Fragment[Unit, Any] = "hello"
-  val url = "http://localhost/#hello"
+  val fragment: Fragment[Unit, Any] = 5
+  val url = "http://localhost/#5"
   val error: FragmentMatchingError[SimpleFragmentMatchingError] = SimpleFragmentMatchingError.itIsFragmentMatchingError
 
-  "Implicit conversion to fragment" should "match the singleton" in {
-    fragment.matchRawUrl(url) should ===(Right(()))
-    fragment.matchFragment(MaybeFragment(Some("hello"))) should ===(Right(()))
+  test("Implicit conversion to fragment should match the singleton") {
+    assertEquals(fragment.matchRawUrl(url), Right(()))
+    assertEquals(fragment.matchFragment(MaybeFragment(Some("5"))), Right(()))
   }
 
-  it should "not match the singleton when it's different" in {
-    fragment.matchFragment(MaybeFragment(Some("other"))) should ===(Left(error.wrongValue("other", "hello")))
+  test("it should fail when decoding a non-int") {
+    assertEquals(
+      fragment.matchFragment(MaybeFragment(Some("hello"))).left.map(_.toString),
+      FromString[Int, SimpleFragmentMatchingError].apply("hello").map(_ => ()).left.map(_.toString)
+    )
   }
 
-  it should "not match the singleton when it's empty" in {
-    fragment.matchFragment(MaybeFragment(None)) should ===(Left(error.missingFragmentError))
+  test("it should not match the singleton when it's different") {
+    assertEquals(fragment.matchFragment(MaybeFragment(Some("7"))), Left(error.wrongValue(7, 5)))
+  }
+
+  test("it should not match the singleton when it's empty") {
+    assertEquals(fragment.matchFragment(MaybeFragment(None)), Left(error.missingFragmentError))
   }
 
 }

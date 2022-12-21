@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 import urldsl.examples.{intTupleFromDashedString, intTupleDashedPrinter}
 
-class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
+class PathWithQueryParametersSpec extends munit.FunSuite {
 
   import urldsl.language.PathSegment.simplePathErrorImpl._
   import urldsl.language.QueryParameters.simpleParamErrorImpl._
@@ -13,48 +13,55 @@ class PathWithQueryParametersSpec extends AnyFlatSpec with Matchers {
   import urldsl.vocabulary.Param
   import urldsl.vocabulary.UrlMatching
 
-  private val sampleUrl = "http://localhost:8080/hello/2019/january?age=10&tuple=44-55&drinks=orange%20juice&drinks=water"
+  private val sampleUrl =
+    "http://localhost:8080/hello/2019/january?age=10&tuple=44-55&drinks=orange%20juice&drinks=water"
 
-  "Readme example" should "work" in {
+  test("Readme example should work") {
     val path = root / "hello" / segment[Int] / segment[String] / endOfSegments
     val params = param[Int]("age") & listParam[String]("drinks")
 
     val pathWithParams = path ? params
 
-    pathWithParams.matchUrl(
-      List(Segment("hello"), Segment("2019"), Segment("january")),
-      Map("age" -> Param(List("10")), "drinks" -> Param(List("Orange juice", "Water")))
-    ) should be(Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water")))))
-
-    pathWithParams.matchRawUrl(
-      sampleUrl
-    ) should be(
+    assertEquals(
+      pathWithParams.matchUrl(
+        List(Segment("hello"), Segment("2019"), Segment("january")),
+        Map("age" -> Param(List("10")), "drinks" -> Param(List("Orange juice", "Water")))
+      ),
+      Right(UrlMatching((2019, "january"), (10, List("Orange juice", "Water"))))
+    )
+    assertEquals(
+      pathWithParams.matchRawUrl(
+        sampleUrl
+      ),
       Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"))))
     )
-
-    (pathWithParams & param[(Int, Int)]("tuple")).matchRawUrl(
-      sampleUrl
-    ) should be(
+    assertEquals(
+      (pathWithParams & param[(Int, Int)]("tuple")).matchRawUrl(
+        sampleUrl
+      ),
       Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"), 44, 55)))
     )
-
-    path.matchSegments(
-      List(Segment("hello"), Segment("2019"), Segment("january"), Segment("16"))
-    ) should be(Left(urldsl.errors.SimplePathMatchingError.EndOfSegmentRequired(List(Segment("16")))))
-
-    path.matchPath("/hello/2019/january") should be(
-      Right((2019, "january"))
+    assertEquals(
+      path.matchSegments(
+        List(Segment("hello"), Segment("2019"), Segment("january"), Segment("16"))
+      ),
+      Left(urldsl.errors.SimplePathMatchingError.EndOfSegmentRequired(List(Segment("16"))))
     )
 
-    params.matchQueryString("age=22&drinks=orange%20juice&drinks=water") should be(
+    assertEquals(path.matchPath("/hello/2019/january"), Right((2019, "january")))
+
+    assertEquals(
+      params.matchQueryString("age=22&drinks=orange%20juice&drinks=water"),
       Right((22, List("orange juice", "water")))
     )
     // commutativity is there for query params with different names
-    params.matchQueryString("drinks=orange%20juice&drinks=water&age=22") should be(
+    assertEquals(
+      params.matchQueryString("drinks=orange%20juice&drinks=water&age=22"),
       Right((22, List("orange juice", "water")))
     )
     // extra parameters are ignored
-    params.matchQueryString("drinks=orange%20juice&drinks=water&age=22&unused=(something,else)") should be(
+    assertEquals(
+      params.matchQueryString("drinks=orange%20juice&drinks=water&age=22&unused=(something,else)"),
       Right((22, List("orange juice", "water")))
     )
 

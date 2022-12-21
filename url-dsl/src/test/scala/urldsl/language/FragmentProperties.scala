@@ -2,16 +2,18 @@ package urldsl.language
 
 import org.scalacheck._
 import org.scalacheck.Prop._
-import urldsl.errors.{DummyError, ErrorFromThrowable, SimpleFragmentMatchingError}
+import urldsl.errors.{DummyError, ErrorFromThrowable, FragmentMatchingError, SimpleFragmentMatchingError}
 import urldsl.vocabulary.{Codec, MaybeFragment}
 
+import scala.reflect.ClassTag
 import scala.util.Try
-import urldsl.language.Fragment.simpleFragmentErrorImpl._
 
 //noinspection TypeAnnotation
-final class FragmentProperties extends Properties("Fragment") {
+abstract class FragmentProperties[E](val impl: FragmentImpl[E], val error: FragmentMatchingError[E], name: String)(
+  implicit errorFromThrowable: ErrorFromThrowable[E]
+) extends Properties(name) {
 
-  def error = SimpleFragmentMatchingError.itIsFragmentMatchingError
+  import impl._
 
   val fragmentGen: Gen[MaybeFragment] = Gen.option(Gen.asciiStr).map(MaybeFragment.apply)
   val intFragmentGen: Gen[MaybeFragment] =
@@ -37,9 +39,18 @@ final class FragmentProperties extends Properties("Fragment") {
     maybeStringFragment.matchFragment(fragment).isRight
   }
 
+  property("Generating maybeFragment when defined is the same as fragment") = forAll(Gen.option(Gen.asciiStr)) {
+    (str: Option[String]) =>
+      maybeStringFragment.createPart(str) == (str match {
+        case None => ""
+        case Some(s) => stringFragment.createPart(s)
+      })
+
+  }
+
   property("Matching existing string works when fragment is non empty") = forAll(fragmentGen) { fragment =>
     (stringFragment.matchFragment(fragment), fragment) match {
-      case (Left(value), MaybeFragment(None)) => Prop(value == SimpleFragmentMatchingError.MissingFragmentError)
+      case (Left(value), MaybeFragment(None)) => Prop(value == error.missingFragmentError)
       case (Left(error), MaybeFragment(Some(value))) =>
         Prop(false) :| s"Fragment contained value $value but I got the error $error"
       case (Right(value), MaybeFragment(None)) =>
@@ -60,10 +71,10 @@ final class FragmentProperties extends Properties("Fragment") {
   property("Int matching always fail when it's not an int") = forAll(nonIntFragmentGen) { fragment =>
     intFragment.matchFragment(fragment) match {
       case Right(value) => Prop(false) :| s"This was supposed to not match but I got $value"
-      case Left(error) =>
+      case Left(e) =>
         Prop(fragment.value match {
-          case Some(_) => error.isInstanceOf[SimpleFragmentMatchingError.FromThrowable]
-          case None    => error == SimpleFragmentMatchingError.MissingFragmentError
+          case Some(_) => true
+          case None    => e == error.missingFragmentError
         }) :| s"Correctly found out that it was an error but error was wrong, got: $error"
 
     }
@@ -108,7 +119,7 @@ final class FragmentProperties extends Properties("Fragment") {
 
     Prop(
       intFragment
-        .filter(predicate, _ => ErrorFromThrowable[SimpleFragmentMatchingError].fromThrowable(new IllegalArgumentException("Non positive number")))
+        .filter(predicate, _ => ErrorFromThrowable[E].fromThrowable(new IllegalArgumentException("Non positive number")))
         .as[PosInt]
         .?
         .matchFragment(MaybeFragment(maybeX.map(_.toString))) == Right(maybeX.filter(predicate).map(PosInt.apply))
@@ -126,7 +137,7 @@ final class FragmentProperties extends Properties("Fragment") {
     val predicate: Int => Boolean = _ > 0
 
     val fragment = intFragment
-      .filter(predicate, _ => ErrorFromThrowable[SimpleFragmentMatchingError].fromThrowable(new IllegalArgumentException("Non positive number")))
+      .filter(predicate, _ => ErrorFromThrowable[E].fromThrowable(new IllegalArgumentException("Non positive number")))
       .as[PosInt]
       .?.getOrElse(one)
 

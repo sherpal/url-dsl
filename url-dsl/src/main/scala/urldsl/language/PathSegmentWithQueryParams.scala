@@ -63,8 +63,8 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
   def createUrl(path: PathType, params: ParamsType): (List[Segment], Map[String, Param]) =
     (pathSegment.createSegments(path), queryParams.createParams(params))
 
-  def createUrl(path: PathType)(implicit ev: Unit =:= ParamsType): (List[Segment], Map[String, Param]) =
-    createUrl(path, ev(()))
+  def createUrl(query: ParamsType)(implicit ev: Unit =:= PathType): (List[Segment], Map[String, Param]) =
+    createUrl(ev(()), query)
 
   def createUrlString(
       path: PathType,
