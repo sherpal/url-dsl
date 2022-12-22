@@ -2,7 +2,7 @@ name: Scala CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ '**' ]
 
 jobs:
   build:
@@ -23,3 +23,5 @@ jobs:
         distribution: 'adopt'
     - name: Run tests
       run: sbt +test
+    - name: Run coverage
+      run: sbt clean coverage url-dslJVM/test && sbt coverageReport

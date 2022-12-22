@@ -1,61 +1,62 @@
 package urldsl.language
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import urldsl.errors.DummyError
 import urldsl.vocabulary.{PathMatchOutput, Segment}
 
-class PathSegmentSpec extends AnyFlatSpec with Matchers {
+class PathSegmentSpec extends munit.FunSuite {
 
   val psi: PathSegmentImpl[DummyError] = PathSegmentImpl[DummyError]
   import psi._
 
   val $ : PathSegment[Unit, DummyError] = root
 
-  "Empty path with end of segments" should "match the empty path" in {
-    ($ / endOfSegments).matchPath("/") should be(Right(()))
-    ($ / endOfSegments).matchPath("") should be(Right(()))
+  test("Empty path with end of segments should match the empty path") {
+    assertEquals(($ / endOfSegments).matchPath("/"), Right(()))
+    assertEquals(($ / endOfSegments).matchPath(""), Right(()))
   }
 
-  "PathSegment" should "match the following segment lists" in {
+  test("PathSegment should match the following segment lists") {
 
-    ($ / segment[Int] / segment[String]).matchSegments(List(Segment("17"), Segment("Hello"))).map(_.output) should be(
+    assertEquals(
+      ($ / segment[Int] / segment[String]).matchSegments(List(Segment("17"), Segment("Hello"))).map(_.output),
       Right((17, "Hello"))
     )
 
-    ($ / "hello" / true).matchSegments(List("hello", "true", "something")) should be(
+    assertEquals(
+      ($ / "hello" / true).matchSegments(List("hello", "true", "something")),
       Right(PathMatchOutput((), List(Segment("something"))))
     )
 
   }
 
-  "remainingSegments" should "consumes all segments" in {
+  test("remainingSegments should consumes all segments") {
 
     val list = List("one", "two", "three")
 
-    ($ / remainingSegments).matchSegments(list.map(Segment(_))) should be(
-      Right(PathMatchOutput(list, Nil))
-    )
+    assertEquals(($ / remainingSegments).matchSegments(list.map(Segment(_))), Right(PathMatchOutput(list, Nil)))
 
-    ($ / segment[String] / remainingSegments).matchSegments(list.map(Segment(_))) should be(
+    assertEquals(
+      ($ / segment[String] / remainingSegments).matchSegments(list.map(Segment(_))),
       Right(PathMatchOutput(("one", list.tail), Nil))
     )
 
-    ($ / list.head / list.tail.head / list.tail.tail.head).matchSegments(list.map(Segment(_))) should be(
+    assertEquals(
+      ($ / list.head / list.tail.head / list.tail.tail.head).matchSegments(list.map(Segment(_))),
       Right(PathMatchOutput((), Nil))
     )
 
   }
 
-  "Matching a simple raw string" should "work" in {
+  test("Matching a simple raw string should work") {
 
     val url = "http://localhost:8080/hello/32/true"
     val path = $ / segment[String] / segment[Int] / true
 
-    path.matchRawUrl(url) should be(
-      Right(("hello", 32))
-    )
+    assertEquals(path.matchRawUrl(url), Right(("hello", 32)))
+  }
 
+  test("noMatch segment generates empty string") {
+    assertEquals(noMatch.createPath(), "")
   }
 
 }

@@ -22,7 +22,7 @@ trait UrlStringGenerator {
     val paramsString = makeParams(params)
     val pathString = makePath(segments)
 
-    pathString + (if (paramsString.nonEmpty) "?" else "") + pathString
+    pathString ++ (if (paramsString.nonEmpty) "?" else "") ++ paramsString
   }
 
   final def makeFragment(maybeFragment: MaybeFragment): String = maybeFragment.value match {

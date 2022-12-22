@@ -6,7 +6,7 @@ final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
   private val urlParser = new URL(rawUrl)
 
-  def queryParametersString: String = urlParser.search
+  def queryParametersString: String = urlParser.search.dropWhile(_ == '?')
 
   def path: String = urlParser.pathname
 

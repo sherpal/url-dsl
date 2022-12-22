@@ -19,11 +19,11 @@ object DummyError {
 
   implicit final lazy val dummyErrorIsPathMatchingError: PathMatchingError[DummyError] =
     new PathMatchingError[DummyError] {
-      def malformed(str: String): DummyError = dummyError
+      def malformed(str: => String): DummyError = dummyError
 
-      def endOfSegmentRequired(remainingSegments: List[Segment]): DummyError = dummyError
+      def endOfSegmentRequired(remainingSegments: => List[Segment]): DummyError = dummyError
 
-      def wrongValue(expected: String, actual: String): DummyError = dummyError
+      def wrongValue(expected: => String, actual: => String): DummyError = dummyError
 
       def missingSegment: DummyError = dummyError
 

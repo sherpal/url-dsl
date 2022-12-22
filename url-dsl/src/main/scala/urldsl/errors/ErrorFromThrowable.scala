@@ -11,3 +11,7 @@ trait ErrorFromThrowable[A] {
   def fromThrowable(throwable: Throwable): A
 
 }
+
+object ErrorFromThrowable {
+  def apply[A](implicit error: ErrorFromThrowable[A]): ErrorFromThrowable[A] = error
+}

@@ -174,8 +174,10 @@ object Fragment {
       case MaybeFragment(Some(fragment)) =>
         fromString(fragment) match {
           case Left(value)  => Left(value)
-          case Right(_: T)  => Right(())
-          case Right(value) => Left(fragmentMatchingError.wrongValue(value, t))
+          case Right(decodedValue) => decodedValue match {
+            case value: T if value == t => Right(())
+            case _ => Left(fragmentMatchingError.wrongValue(decodedValue, t))
+          }
         }
     },
     _ => MaybeFragment(Some(printer.print(t)))
