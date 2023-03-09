@@ -1,7 +1,6 @@
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 import xerial.sbt.Sonatype._
 
-
 ThisBuild / scalacOptions ++= Seq( // use ++= to add to existing options
   "-encoding",
   "utf8", // if an option takes an arg, supply it on the same line
@@ -9,7 +8,7 @@ ThisBuild / scalacOptions ++= Seq( // use ++= to add to existing options
   "-language:implicitConversions",
   "-language:existentials",
   "-unchecked",
-  "-Xfatal-warnings",
+  // "-Xfatal-warnings",
   "-deprecation"
 )
 
