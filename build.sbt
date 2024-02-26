@@ -45,6 +45,15 @@ lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
       "org.scalameta" %%% "munit" % "0.7.29" % Test
     )
   )
+  .jsSettings(
+    scalacOptions ++= sys.env.get("CI").map { _ =>
+      val localSourcesPath = (LocalRootProject / baseDirectory).value.toURI
+      val remoteSourcesPath = s"https://raw.githubusercontent.com/sherpal/url-dsl/${git.gitHeadCommit.value.get}/"
+      val sourcesOptionName = if (scalaVersion.value.startsWith("2.")) "-P:scalajs:mapSourceURI" else "-scalajs-mapSourceURI"
+
+      s"${sourcesOptionName}:$localSourcesPath->$remoteSourcesPath"
+    }
+  )
   .jvmSettings(
     coverageFailOnMinimum := true,
     coverageMinimumStmtTotal := 99,
