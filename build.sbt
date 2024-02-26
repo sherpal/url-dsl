@@ -43,6 +43,9 @@ lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
       "org.scalatest" %%% "scalatest" % "3.2.14" % Test,
       "org.scalacheck" %%% "scalacheck" % "1.17.0" % Test,
       "org.scalameta" %%% "munit" % "0.7.29" % Test
+    ),
+    (Compile / doc / scalacOptions) ++= Seq(
+      "-no-link-warnings" // Suppress scaladoc "Could not find any member to link for" warnings
     )
   )
   .jsSettings(
