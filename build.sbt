@@ -29,9 +29,12 @@ inThisBuild(
       )
     ),
     crossScalaVersions := Seq("3.2.0", "2.13.5", "2.12.13"),
-    scalaVersion := crossScalaVersions.value.head
+    scalaVersion := crossScalaVersions.value.head,
+    autoAPIMappings := true
   )
 )
+
+
 
 lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -46,7 +49,8 @@ lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
     ),
     (Compile / doc / scalacOptions) ++= Seq(
       "-no-link-warnings" // Suppress scaladoc "Could not find any member to link for" warnings
-    )
+    ),
+    Compile / doc / scalacOptions ~= ((options: Seq[String]) => options.filterNot(_ == "-Xfatal-warnings"))
   )
   .jsSettings(
     scalacOptions ++= sys.env.get("CI").map { _ =>
