@@ -100,7 +100,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     * should that change?
     *
     * @example
-    *   {{{ param[Int]("age").filter(_ >= 0, (params: Map[String, Param]) => someError(params)) }}}
+    *   {{{param[Int]("age").filter(_ >= 0, (params: Map[String, Param]) => someError(params))}}}
     *
     * @param predicate
     *   the additional predicate that the output must satisfy
@@ -201,7 +201,7 @@ object QueryParameters {
         case Param(Nil)       => Left(paramMatchingError.missingParameterError(paramName))
         case Param(head :: _) => fromString(head)
       },
-      q => Param(List(printer(q)))
+      (q: Q) => Param(List(printer(q)))
     )
 
   final def listParam[Q, A](
@@ -226,9 +226,9 @@ object QueryParameters {
             }
             .map(_.reverse)
       },
-      q => Param(q.map(printer.apply)),
+      (q: List[Q]) => Param(q.map(printer.apply)),
       // If `paramName` is not present in the parameters we should return an empty list.
-      onParameterNotFound = params => Right(ParamMatchOutput(Nil, params))
+      onParameterNotFound = (params: Map[String, Param]) => Right(ParamMatchOutput(List.empty[Q], params))
     )
 
   final lazy val dummyErrorImpl = QueryParametersImpl[DummyError]
