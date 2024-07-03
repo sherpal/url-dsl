@@ -1,10 +1,10 @@
 package urldsl.url
 
-import java.net.{URL, URLDecoder}
+import java.net.{URI, URLDecoder}
 
 final class JavaNetUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
-  private val urlParser = new URL(rawUrl)
+  private val urlParser = URI.create(rawUrl).toURL()
 
   def queryParametersString: String = Option(urlParser.getQuery).getOrElse("")
 
