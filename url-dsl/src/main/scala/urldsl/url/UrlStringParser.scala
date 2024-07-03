@@ -15,7 +15,7 @@ trait UrlStringParser extends UrlStringDecoder {
   /** Returns the raw content of the fragment (sometimes called ref), or None if there is no fragment */
   def maybeFragment: Option[String]
 
-  /** Alias for [[maybeFragment]].  */
+  /** Alias for [[maybeFragment]]. */
   final def maybeRef: Option[String] = maybeFragment
 
   final def segments: List[Segment] = decodePath(path)

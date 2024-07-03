@@ -8,44 +8,45 @@ import app.tulz.tuplez.Composition
 
 import scala.language.implicitConversions
 
-/**
-  * Represents a part of the path string of an URL, containing an information of type T, or an error of type A.
-  * @tparam T type represented by this PathSegment
-  * @tparam A type of the error that this PathSegment produces on "illegal" url paths.
+/** Represents a part of the path string of an URL, containing an information of type T, or an error of type A.
+  * @tparam T
+  *   type represented by this PathSegment
+  * @tparam A
+  *   type of the error that this PathSegment produces on "illegal" url paths.
   */
 trait PathSegment[T, +A] extends UrlPart[T, A] {
 
-  /**
-    * Tries to match the list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`.
-    * If it can not, it returns an error indicating the reason of the failure.
-    * If it could, it returns the value of `T`, as well as the list of unused segments.
+  /** Tries to match the list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`. If it can not, it returns
+    * an error indicating the reason of the failure. If it could, it returns the value of `T`, as well as the list of
+    * unused segments.
     *
     * @example
-    *          For example, a segment that matches simply a String in the first segment, when giving segments like
-    *          List(Segment("hello"), Segment("3"))
-    *          will return
-    *          Right(PathMatchOutput("hello", List(Segment("3")))
+    *   For example, a segment that matches simply a String in the first segment, when giving segments like
+    *   List(Segment("hello"), Segment("3")) will return Right(PathMatchOutput("hello", List(Segment("3")))
     *
-    * @param segments             The list of [[urldsl.vocabulary.Segment]] to match this path segment again.
-    * @return The "de-serialized" element with unused segment, if successful.
+    * @param segments
+    *   The list of [[urldsl.vocabulary.Segment]] to match this path segment again.
+    * @return
+    *   The "de-serialized" element with unused segment, if successful.
     */
   def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]]
 
-  /**
-    * Matches the given raw `url` using the given [[urldsl.url.UrlStringParserGenerator]] for creating a
+  /** Matches the given raw `url` using the given [[urldsl.url.UrlStringParserGenerator]] for creating a
     * [[urldsl.url.UrlStringParser]].
     *
     * This method doesn't return the information about the remaining unused segments. The thought leading to this is
     * that [[urldsl.vocabulary.PathMatchOutput]] are supposed to be internal mechanics, while this method is supposed to
     * be the exposed interface of this [[urldsl.language.PathSegment]].
     *
-    * @param url                      the url to parse. It has to be a well formed URL, otherwise this could raise an
-    *                                  exception, depending on the provided [[urldsl.url.UrlStringParserGenerator]].
-    * @param urlStringParserGenerator the [[urldsl.url.UrlStringParserGenerator]] used to create the
-    *                                  [[urldsl.url.UrlStringParser]] that will actually parse the url to create the
-    *                                  segments. The default one is usually a good choice. It has different
-    *                                  implementations in JVM and JS, but they *should* behave the same way.
-    * @return                         the output contained in the url, or the error if something fails.
+    * @param url
+    *   the url to parse. It has to be a well formed URL, otherwise this could raise an exception, depending on the
+    *   provided [[urldsl.url.UrlStringParserGenerator]].
+    * @param urlStringParserGenerator
+    *   the [[urldsl.url.UrlStringParserGenerator]] used to create the [[urldsl.url.UrlStringParser]] that will actually
+    *   parse the url to create the segments. The default one is usually a good choice. It has different implementations
+    *   in JVM and JS, but they *should* behave the same way.
+    * @return
+    *   the output contained in the url, or the error if something fails.
     */
   def matchRawUrl(
       url: String,
@@ -56,27 +57,23 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   def matchPath(path: String, decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder): Either[A, T] =
     matchSegments(decoder.decodePath(path)).map(_.output)
 
-  /**
-    * Generate a list of segments representing the argument `t`.
+  /** Generate a list of segments representing the argument `t`.
     *
     * `matchSegments` and `createSegments` should be (functional) inverse of each other. That is,
     * `this.matchSegments(this.createSegments(t)) == Right(PathMathOutput(t, Nil))`
     */
   def createSegments(t: T): List[Segment]
 
-  /**
-    * Sugar when `T =:= Unit`
+  /** Sugar when `T =:= Unit`
     */
   final def createSegments()(implicit ev: Unit =:= T): List[Segment] = createSegments(ev(()))
 
-  /**
-    * Concatenates the segments generated by `createSegments`
+  /** Concatenates the segments generated by `createSegments`
     */
   def createPath(t: T, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makePath(createSegments(t))
 
-  /**
-    * Sugar when `T =:= Unit`
+  /** Sugar when `T =:= Unit`
     */
   final def createPath()(implicit ev: Unit =:= T): String =
     createPath(())
@@ -85,8 +82,7 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
 
   final def createPart(t: T, encoder: UrlStringGenerator): String = createPath(t, encoder)
 
-  /**
-    * Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Composition]]
+  /** Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Composition]]
     * rules.
     */
   final def /[U, A1 >: A](that: PathSegment[U, A1])(implicit c: Composition[T, U]): PathSegment[c.Composed, A1] =
@@ -110,18 +106,17 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   ): PathSegmentWithQueryParams[T, A, ParamsType, QPError] =
     new PathSegmentWithQueryParams(this, params)
 
-  /**
-    * Adds an extra satisfying criteria to the de-serialized output of this [[urldsl.language.PathSegment]].
+  /** Adds an extra satisfying criteria to the de-serialized output of this [[urldsl.language.PathSegment]].
     *
     * The new de-serialization works as follows:
-    * - if the initial de-serialization fails, then it returns the generated error
-    * - otherwise, if the de-serialized element satisfies the predicate, then it returns the element
-    * - if the predicate is false, generates the given `error` by feeding it the segments that it tried to match.
+    *   - if the initial de-serialization fails, then it returns the generated error
+    *   - otherwise, if the de-serialized element satisfies the predicate, then it returns the element
+    *   - if the predicate is false, generates the given `error` by feeding it the segments that it tried to match.
     *
     * This can be useful in, among others, two scenarios:
-    * - enforce bigger restriction on a segment (e.g., from integers to positive integer, regex match...)
-    * - in a multi-part segment, ensure consistency between the different component (e.g., a range of two integers that
-    *   should not be too large...)
+    *   - enforce bigger restriction on a segment (e.g., from integers to positive integer, regex match...)
+    *   - in a multi-part segment, ensure consistency between the different component (e.g., a range of two integers
+    *     that should not be too large...)
     */
   final def filter[A1 >: A](predicate: T => Boolean, error: List[Segment] => A1): PathSegment[T, A1] =
     PathSegment.factory[T, A1](
@@ -139,9 +134,8 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
     this.asInstanceOf[PathSegment[T, DummyError]].filter(predicate, _ => DummyError.dummyError)
   }
 
-  /**
-    * Builds a [[PathSegment]] that first tries to match with this one, then tries to match with `that` one.
-    * If both fail, the error of the second is returned (todo[behaviour]: should that change?)
+  /** Builds a [[PathSegment]] that first tries to match with this one, then tries to match with `that` one. If both
+    * fail, the error of the second is returned (todo[behaviour]: should that change?)
     */
   final def ||[U, A1 >: A](that: PathSegment[U, A1]): PathSegment[Either[T, U], A1] =
     PathSegment.factory[Either[T, U], A1](
@@ -154,14 +148,12 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
       _.fold(this.createSegments, that.createSegments)
     )
 
-  /**
-    * Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
+  /** Casts this [[PathSegment]] to the new type U. Note that the [[urldsl.vocabulary.Codec]] must be an exception-free
     * bijection between T and U (or at least an embedding, if you know that you are doing).
     */
   final def as[U](implicit codec: Codec[T, U]): PathSegment[U, A] = as[U](codec.leftToRight _, codec.rightToLeft _)
 
-  /**
-    * Casts this [[PathSegment]] to the new type U. The conversion functions should form an exception-free bijection
+  /** Casts this [[PathSegment]] to the new type U. The conversion functions should form an exception-free bijection
     * between T and U (or at least an embedding, if you know that you are doing).
     */
   final def as[U](fromTToU: T => U, fromUToT: U => T): PathSegment[U, A] = PathSegment.factory[U, A](
@@ -169,18 +161,16 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
     fromUToT.andThen(createSegments)
   )
 
-  /**
-    * Matches using this [[PathSegment]], and then forgets its content.
-    * Uses the `default` value when creating the path to go back.
+  /** Matches using this [[PathSegment]], and then forgets its content. Uses the `default` value when creating the path
+    * to go back.
     */
   final def ignore(default: => T): PathSegment[Unit, A] = PathSegment.factory[Unit, A](
     matchSegments(_).map(_.map(_ => ())),
     (_: Unit) => createSegments(default)
   )
 
-  /**
-    * Forgets the information contained in the path parameter by injecting one.
-    * This turn this "dynamic" [[PathSegment]] into a fix one.
+  /** Forgets the information contained in the path parameter by injecting one. This turn this "dynamic" [[PathSegment]]
+    * into a fix one.
     */
   final def provide[A1 >: A](
       t: T
@@ -190,15 +180,15 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
         for {
           tMatch <- matchSegments(segments)
           PathMatchOutput(tOutput, unusedSegments) = tMatch
-          unitMatched <- if (tOutput != t) Left(pathMatchingError.wrongValue(printer(t), printer(tOutput)))
-          else Right(PathMatchOutput((), unusedSegments))
+          unitMatched <-
+            if (tOutput != t) Left(pathMatchingError.wrongValue(printer(t), printer(tOutput)))
+            else Right(PathMatchOutput((), unusedSegments))
         } yield unitMatched,
       (_: Unit) => createSegments(t)
     )
 
-  /**
-    * Associates this [[PathSegment]] with the given [[Fragment]] in order to match raw urls satisfying both
-    * conditions, and returning the outputs from both.
+  /** Associates this [[PathSegment]] with the given [[Fragment]] in order to match raw urls satisfying both conditions,
+    * and returning the outputs from both.
     *
     * The query part of the url will be *ignored* (and will return Unit).
     */
@@ -213,8 +203,7 @@ object PathSegment {
 
   type PathSegmentSimpleError[T] = PathSegment[T, SimplePathMatchingError]
 
-  /**
-    * A Type of path segment where we don't care about the error.
+  /** A Type of path segment where we don't care about the error.
     */
   type PathSegmentNoError[T] = PathSegment[T, DummyError]
 
@@ -237,13 +226,12 @@ object PathSegment {
   final def noMatch[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] =
     factory[Unit, A](_ => Left(pathMatchingError.unit), _ => Nil)
 
-  /**
-    * Simple trait factory for "single segment"-oriented path Segments.
+  /** Simple trait factory for "single segment"-oriented path Segments.
     *
     * This can be used to match a simple String, or a simple Int, etc...
     */
-  final def simplePathSegment[T, A](matching: Segment => Either[A, T], creating: T => Segment)(
-      implicit pathMatchingError: PathMatchingError[A]
+  final def simplePathSegment[T, A](matching: Segment => Either[A, T], creating: T => Segment)(implicit
+      pathMatchingError: PathMatchingError[A]
   ): PathSegment[T, A] =
     factory(
       (_: Seq[Segment]) match {
@@ -258,23 +246,21 @@ object PathSegment {
     segment[String, A]
 
   /** Matches a simple Int and tries to convert it to an Int. */
-  final def intSegment[A](
-      implicit pathMatchingError: PathMatchingError[A],
+  final def intSegment[A](implicit
+      pathMatchingError: PathMatchingError[A],
       fromThrowable: ErrorFromThrowable[A]
   ): PathSegment[Int, A] = segment[Int, A]
 
-  /**
-    * Creates a segment matching any element of type `T`, as long as the [[urldsl.vocabulary.FromString]] can
+  /** Creates a segment matching any element of type `T`, as long as the [[urldsl.vocabulary.FromString]] can
     * de-serialize it.
     */
-  final def segment[T, A](
-      implicit fromString: FromString[T, A],
+  final def segment[T, A](implicit
+      fromString: FromString[T, A],
       printer: Printer[T],
       error: PathMatchingError[A]
   ): PathSegment[T, A] = simplePathSegment[T, A]((fromString.apply _).compose(_.content), printer.print)
 
-  /**
-    * Check that the segments ends at this point.
+  /** Check that the segments ends at this point.
     */
   final def endOfSegments[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] = factory[Unit, A](
     (_: List[Segment]) match {
@@ -284,8 +270,7 @@ object PathSegment {
     _ => Nil
   )
 
-  /**
-    * Consumes all the remaining segments.
+  /** Consumes all the remaining segments.
     *
     * This can be useful for static resources.
     */
@@ -294,14 +279,13 @@ object PathSegment {
     _.map(Segment.apply)
   )
 
-  /**
-    * [[PathSegment]] that matches one of the given different possibilities.
+  /** [[PathSegment]] that matches one of the given different possibilities.
     *
-    * This can be useful in a Router, when you want to delegate the final decision to an inner router.
-    * Since all possibilities are good, the creation of segment simply takes the first one.
+    * This can be useful in a Router, when you want to delegate the final decision to an inner router. Since all
+    * possibilities are good, the creation of segment simply takes the first one.
     */
-  final def oneOf[T, A](t: T, ts: T*)(
-      implicit fromString: FromString[T, A],
+  final def oneOf[T, A](t: T, ts: T*)(implicit
+      fromString: FromString[T, A],
       printer: Printer[T],
       pathMatchingError: PathMatchingError[A]
   ): PathSegment[Unit, A] = {
@@ -318,18 +302,15 @@ object PathSegment {
     )
   }
 
-  /**
-    * Returns a [[urldsl.language.PathSegment]] which matches exactly the argument `t`.
+  /** Returns a [[urldsl.language.PathSegment]] which matches exactly the argument `t`.
     *
     * This conversion is implicit if you can provide a [[urldsl.vocabulary.FromString]] and a
-    * [[urldsl.vocabulary.Printer]], so that it enables writing,
-    * e.g.,
-    * `root / "hello" / true`
+    * [[urldsl.vocabulary.Printer]], so that it enables writing, e.g., `root / "hello" / true`
     */
   implicit final def unaryPathSegment[T, A](
       t: T
-  )(
-      implicit fromString: FromString[T, A],
+  )(implicit
+      fromString: FromString[T, A],
       printer: Printer[T],
       pathMatchingError: PathMatchingError[A]
   ): PathSegment[Unit, A] =

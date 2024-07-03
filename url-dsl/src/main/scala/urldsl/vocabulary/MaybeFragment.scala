@@ -1,7 +1,6 @@
 package urldsl.vocabulary
 
-/**
-  * Wrapper around the raw fragment part of the URL.
+/** Wrapper around the raw fragment part of the URL.
   *
   * None when the URL does not contain any fragment.
   */

@@ -5,12 +5,10 @@ import urldsl.vocabulary.{FromString, Printer, Segment}
 
 import scala.language.implicitConversions
 
-/**
-  * Using the pre-defined path segments in [[PathSegment]] can be cumbersome if you have to constantly specify the error
+/** Using the pre-defined path segments in [[PathSegment]] can be cumbersome if you have to constantly specify the error
   * type A, for example in the [[PathSegment.segment]] or [[PathSegment.root]] methods. Therefore, you can invoke an
-  * implementation of this class and import its members instead.
-  * We don't redefine [[PathSegment.intSegment]] and [[PathSegment.stringSegment]] since they can be easily and
-  * conveniently invoked using the `segment` method below.
+  * implementation of this class and import its members instead. We don't redefine [[PathSegment.intSegment]] and
+  * [[PathSegment.stringSegment]] since they can be easily and conveniently invoked using the `segment` method below.
   *
   * @example
   *   {{{
@@ -22,7 +20,8 @@ import scala.language.implicitConversions
   *           [[PathSegment]] companion object)
   *   }}}
   *
-  * @tparam A type of error.
+  * @tparam A
+  *   type of error.
   */
 trait PathSegmentImpl[A] {
 
@@ -43,8 +42,8 @@ trait PathSegmentImpl[A] {
   /* I think this should not be necessary but the compiler has difficulties finding the correct error due to covariance */
   implicit def unaryPathSegment[T](
       t: T
-  )(
-      implicit fromString: FromString[T, A],
+  )(implicit
+      fromString: FromString[T, A],
       printer: Printer[T]
   ): PathSegment[Unit, A] =
     PathSegment.simplePathSegment(

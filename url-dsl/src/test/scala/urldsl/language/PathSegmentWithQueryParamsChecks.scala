@@ -13,7 +13,7 @@ abstract class PathSegmentWithQueryParamsChecks[P, Q, F](
     pErrorFromThrowable: ErrorFromThrowable[P],
     qErrorFromThrowable: ErrorFromThrowable[Q],
     fErrorFromThrowable: ErrorFromThrowable[F],
-  pPathMatchingError: PathMatchingError[P]
+    pPathMatchingError: PathMatchingError[P]
 ) extends Properties(name) {
 
   import impl._

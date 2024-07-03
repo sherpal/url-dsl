@@ -40,4 +40,3 @@ final class CodecSpecFor3 extends munit.FunSuite {
   }
 
 }
-

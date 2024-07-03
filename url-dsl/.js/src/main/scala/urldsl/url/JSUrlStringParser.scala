@@ -12,7 +12,7 @@ final class JSUrlStringParser(val rawUrl: String) extends UrlStringParser {
 
   def maybeFragment: Option[String] =
     Option(urlParser.hash)
-    /*
+      /*
        * Empty fragment are considered to have no fragment at all
        */
       .filter(_.nonEmpty)
