@@ -169,15 +169,28 @@ object QueryParameters {
   final def simpleQueryParam[Q, A](
       paramName: String,
       matching: Param => Either[A, Q],
-      creating: Q => Param
+      creating: Q => Param,
+      onParameterNotFound: Map[String, Param] => Either[A, ParamMatchOutput[Q]]
   )(implicit paramMatchingError: ParamMatchingError[A]): QueryParameters[Q, A] = factory[Q, A](
     (params: Map[String, Param]) =>
       params
         .get(paramName)
         .map(matching)
         .map(_.map(ParamMatchOutput(_, params - paramName))) // consumes that param
-        .getOrElse(Left(paramMatchingError.missingParameterError(paramName))),
+        .getOrElse(onParameterNotFound(params)),
     creating.andThen(paramName -> _).andThen(Map(_))
+)
+
+  final def simpleQueryParam[Q, A](
+      paramName: String,
+      matching: Param => Either[A, Q],
+      creating: Q => Param
+  )(implicit paramMatchingError: ParamMatchingError[A]): QueryParameters[Q, A] =
+    simpleQueryParam(
+      paramName,
+      matching,
+      creating,
+      onParameterNotFound = _ => Left(paramMatchingError.missingParameterError(paramName))
   )
 
   final def param[Q, A](
@@ -206,11 +219,11 @@ object QueryParameters {
     simpleQueryParam[List[Q], A](
       paramName,
       (_: Param) match {
-        case Param(Nil) => Right(List[Q]())
+        case Param(Nil) => Right(Nil)
         case Param(head :: tail) =>
           tail
             .map(fromString.apply)
-            .foldLeft(fromString(head).map(List(_))) { (acc, next) =>
+            .foldLeft(fromString(head).map(_ :: Nil)) { (acc, next) =>
               for {
                 firstResults <- acc
                 nextResult <- next
@@ -218,7 +231,9 @@ object QueryParameters {
             }
             .map(_.reverse)
       },
-      q => Param(q.map(printer.apply))
+      q => Param(q.map(printer.apply)),
+      // If `paramName` is not present in the parameters we should return an empty list.
+      onParameterNotFound = params => Right(ParamMatchOutput(Nil, params))
     )
 
   final lazy val dummyErrorImpl = QueryParametersImpl[DummyError]
