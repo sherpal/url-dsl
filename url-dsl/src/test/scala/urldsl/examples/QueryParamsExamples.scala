@@ -41,6 +41,8 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       */
     listParam[Int]("other").matchRawUrl(sampleUrl).map(_.sorted) should be(Right(List(2, 3)))
 
+    listParam[String]("non-existent").matchRawUrl("http://foo.com/") should be(Right(Nil))
+
     /** You can compose several [[urldsl.language.QueryParameters]] with the `&` operator. */
     (param[String]("bar") & param[String]("babar")).matchRawUrl(sampleUrl) should be(
       Right(("stuff", "other stuff"))
@@ -136,6 +138,8 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     (param[String]("p1") & listParam[String]("p2")).createPart(("hey", List("one", "two"))) should be(
       """p1=hey&p2=one&p2=two"""
     )
+
+    listParam[String]("p1").createPart(Nil) should be("")
 
     /** Flatenning of tuple param */
     (param[String]("p1") & param[(Int, Int)]("p2") & listParam[String]("p3")).createPart(("hey", 11, 22, List("one", "two"))) should be(
