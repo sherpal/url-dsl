@@ -11,7 +11,10 @@ final class QueryParameterSpec extends munit.FunSuite {
   import impl._
 
   test("Matching the empty list works") {
-    assertEquals(listParam[Int]("my-list").matchParams(Map("my-list" -> Param(Nil))), Right(ParamMatchOutput(List.empty[Int], Map.empty)))
+    assertEquals(
+      listParam[Int]("my-list").matchParams(Map("my-list" -> Param(Nil))),
+      Right(ParamMatchOutput(List.empty[Int], Map.empty))
+    )
   }
 
   test("Matching single element when list of param is empty fails") {

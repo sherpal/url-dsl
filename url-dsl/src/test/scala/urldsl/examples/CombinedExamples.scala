@@ -4,16 +4,15 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.vocabulary.{PathQueryFragmentMatching, UrlMatching}
 
-/**
-  * In this class, we showcase examples of combining:
-  * - [[urldsl.language.PathSegment]]
-  * - [[urldsl.language.QueryParameters]], and
-  * - [[urldsl.language.Fragment]].
+/** In this class, we showcase examples of combining:
+  *   - [[urldsl.language.PathSegment]]
+  *   - [[urldsl.language.QueryParameters]], and
+  *   - [[urldsl.language.Fragment]].
   *
   * Unlike other examples, we will use the [[urldsl.errors.DummyError]] implementations.
   *
-  * When you combine these, you will end up manipulating objects that can seem nasty. However, the user experience
-  * of code that you actually have to write should stay pretty.
+  * When you combine these, you will end up manipulating objects that can seem nasty. However, the user experience of
+  * code that you actually have to write should stay pretty.
   */
 //noinspection TypeAnnotation
 final class CombinedExamples extends AnyFlatSpec with Matchers {
@@ -42,10 +41,8 @@ final class CombinedExamples extends AnyFlatSpec with Matchers {
       Right(PathQueryFragmentMatching((), ("stuff", List(2, 3)), "the-ref"))
     )
 
-    /**
-      * Finally, we can combine everything.
-      * Note that we first have to combine a [[urldsl.language.PathSegment]] and the [[urldsl.language.QueryParameters]]
-      * and then add the [[urldsl.language.Fragment]].
+    /** Finally, we can combine everything. Note that we first have to combine a [[urldsl.language.PathSegment]] and the
+      * [[urldsl.language.QueryParameters]] and then add the [[urldsl.language.Fragment]].
       */
     (pathPart ? queryPart).withFragment(fragmentPart).matchRawUrl(sampleUrl) should be(
       Right(PathQueryFragmentMatching(23, ("stuff", List(2, 3)), "the-ref"))

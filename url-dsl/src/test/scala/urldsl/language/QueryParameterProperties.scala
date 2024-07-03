@@ -44,8 +44,10 @@ final class QueryParameterProperties extends Properties("QueryParameters") {
 
     val intParam = param[Int]("x").filter(predicate)
 
-    Prop(intParam.matchParams(params) ==
-      (if (predicate(x)) Right(ParamMatchOutput(x, Map())) else Left(DummyError.dummyError))) && Prop(
+    Prop(
+      intParam.matchParams(params) ==
+        (if (predicate(x)) Right(ParamMatchOutput(x, Map())) else Left(DummyError.dummyError))
+    ) && Prop(
       intParam.createParams(x) == params
     )
   }

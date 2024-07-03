@@ -2,10 +2,9 @@ package urldsl.language
 
 import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
 
-/**
-  * A [[UrlPart]] represents a part of (or the entire) URL and is able to extract some information out of it.
-  * When it succeeds to extract information, it returns an element of type T (wrapped in a [[Right]]). When it fails
-  * to extract such information, it returns an error type E (wrapped in a [[Left]].
+/** A [[UrlPart]] represents a part of (or the entire) URL and is able to extract some information out of it. When it
+  * succeeds to extract information, it returns an element of type T (wrapped in a [[Right]]). When it fails to extract
+  * such information, it returns an error type E (wrapped in a [[Left]].
   *
   * A [[UrlPart]] is also able to generate its corresponding part of the URL by ingesting an element of type T. When
   * doing that, it outputs a String (whose semantic may vary depending on the type of [[UrlPart]] you are dealing with).
@@ -41,10 +40,9 @@ object UrlPart {
     def createPart(t: T, encoder: UrlStringGenerator): String = generator(t, encoder)
   }
 
-  /**
-    * Type alias when you don't care about what kind of error is issued.
-    * [[Any]] can seem weird, but it has to be understood as "since it can fail with anything, I won't be able to do
-    * anything with the error, which means that I can only check whether it failed or not".
+  /** Type alias when you don't care about what kind of error is issued. [[Any]] can seem weird, but it has to be
+    * understood as "since it can fail with anything, I won't be able to do anything with the error, which means that I
+    * can only check whether it failed or not".
     */
   type SimpleUrlPart[T] = UrlPart[T, Any]
 

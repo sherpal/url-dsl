@@ -2,8 +2,7 @@ package urldsl.language
 
 import urldsl.errors.{FragmentMatchingError, ParamMatchingError, PathMatchingError}
 
-final class AllImpl[P, Q, F] private (
-    implicit
+final class AllImpl[P, Q, F] private (implicit
     protected val pathError: PathMatchingError[P],
     protected val queryError: ParamMatchingError[Q],
     protected val fragmentError: FragmentMatchingError[F]
@@ -12,8 +11,7 @@ final class AllImpl[P, Q, F] private (
     with FragmentImpl[F]
 
 object AllImpl {
-  def apply[P, Q, F](
-      implicit
+  def apply[P, Q, F](implicit
       pathError: PathMatchingError[P],
       queryError: ParamMatchingError[Q],
       fragmentError: FragmentMatchingError[F]

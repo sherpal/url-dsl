@@ -5,8 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import urldsl.errors.SimplePathMatchingError
 import urldsl.vocabulary.{Codec, Segment}
 
-/**
-  * This class exposes some example of usage of the [[urldsl.language.PathSegment]] class.
+/** This class exposes some example of usage of the [[urldsl.language.PathSegment]] class.
   *
   * The `sampleUrl` used throughout this example class is defined in the [[urldsl.examples]] package object.
   */
@@ -20,14 +19,12 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     /** `root` is a "dummy" matcher which matches anything. It returns [[Unit]] when matching. */
     root.matchRawUrl(sampleUrl) should be(Right(()))
 
-    /**
-      * Appending a specific segment value to the root in order to match the first segment.
-      * It returns Unit when matching, since we assume that the information is already known (it's "foo").
+    /** Appending a specific segment value to the root in order to match the first segment. It returns Unit when
+      * matching, since we assume that the information is already known (it's "foo").
       */
     (root / "foo").matchRawUrl(sampleUrl) should be(Right(()))
 
-    /**
-      * Appending a [[String]] segmennt in order to retrieve the information contained in the first segment.
+    /** Appending a [[String]] segmennt in order to retrieve the information contained in the first segment.
       */
     (root / segment[String]).matchRawUrl(sampleUrl) should be(Right("foo"))
 
@@ -44,13 +41,12 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
       Right(("foo", 23, true))
     )
 
-    /**
-      * You can compose things the way you like, "pre-computing" segments.
+    /** You can compose things the way you like, "pre-computing" segments.
       *
-      * The `/` operator is *associative*, which means that the "place where you put parenthesis" doesn't matter. In
-      * the same way that (3+4)+5 = 3+(4+5), you have that `(s1 / s2) / s3 = s1 / (s2 / s3)`. Note that they won't be
-      * equal as Scala objects, but they will be for any (relevant) observable behaviour. (Technical note: it's not
-      * entirely true if you go crazy in tupling things.)
+      * The `/` operator is *associative*, which means that the "place where you put parenthesis" doesn't matter. In the
+      * same way that (3+4)+5 = 3+(4+5), you have that `(s1 / s2) / s3 = s1 / (s2 / s3)`. Note that they won't be equal
+      * as Scala objects, but they will be for any (relevant) observable behaviour. (Technical note: it's not entirely
+      * true if you go crazy in tupling things.)
       */
     val s1 = segment[String]
     val s2 = segment[Int]
@@ -60,7 +56,9 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     /** You can also "group" several segments into a more meaningful class than a pair or a triplet. */
     case class Stuff(str: String, j: Int)
 
-    (s1 / s2).as((t: (String, Int)) => Stuff(t._1, t._2), (s: Stuff) => s match { case Stuff(str, j) => (str, j) }).matchRawUrl(sampleUrl) should be(
+    (s1 / s2)
+      .as((t: (String, Int)) => Stuff(t._1, t._2), (s: Stuff) => s match { case Stuff(str, j) => (str, j) })
+      .matchRawUrl(sampleUrl) should be(
       Right(Stuff("foo", 23))
     )
 
@@ -80,21 +78,18 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
       )
     )
 
-    /**
-      * As you probably noticed, [[urldsl.language.PathSegment]] are immutable objects and hence, can be reused freely.
+    /** As you probably noticed, [[urldsl.language.PathSegment]] are immutable objects and hence, can be reused freely.
       */
     (s1 / s1).matchRawUrl(sampleUrl) should be(Right("foo", "23"))
 
-    /**
-      * You also have the ability to compose [[urldsl.language.PathSegment]] "horizontally", by "branching" several
+    /** You also have the ability to compose [[urldsl.language.PathSegment]] "horizontally", by "branching" several
       * possibilities
       */
     (root / (segment[Int] || segment[String])).matchRawUrl(sampleUrl) should be(Right(Right("foo")))
 
-    /**
-      * The [[urldsl.language.PathSegment]] trait is also very general, and while part of its power comes from its
-      * great "composability", it also comes from its ability to make quite generic things.
-      * One example is imposing that the path has ended.
+    /** The [[urldsl.language.PathSegment]] trait is also very general, and while part of its power comes from its great
+      * "composability", it also comes from its ability to make quite generic things. One example is imposing that the
+      * path has ended.
       */
     (root / "foo" / 23 / true / endOfSegments).matchRawUrl(sampleUrl) should be(Right(()))
     (root / "foo" / endOfSegments).matchRawUrl(sampleUrl) should be(
@@ -133,16 +128,17 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     )
 
     /** Flattening of int-tuple segment with [[app.tulz.tuplez.Composition]] */
-    (root / segment[String] / segment[(Int, Int)] / "hey").matchPath("hello/22-33/hey") should be(Right("hello", 22, 33))
+    (root / segment[String] / segment[(Int, Int)] / "hey").matchPath("hello/22-33/hey") should be(
+      Right("hello", 22, 33)
+    )
 
   }
 
   "Some generating examples" should "work" in {
 
-    /**
-      * You can also use [[urldsl.language.PathSegment]]s for generating paths.
-      * Note that the strength of urldsl is that the `createPart` method is typesafe and knows what the path expects
-      * as information in order to generate the path string.
+    /** You can also use [[urldsl.language.PathSegment]]s for generating paths. Note that the strength of urldsl is that
+      * the `createPart` method is typesafe and knows what the path expects as information in order to generate the path
+      * string.
       */
     (root / segment[String] / segment[Int] / "hey").createPart(("hello", 22)) should be("hello/22/hey")
 

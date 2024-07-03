@@ -7,29 +7,30 @@ import urldsl.vocabulary.{Codec, FromString, MaybeFragment, Printer}
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
-/**
-  * Represents the fragment (or ref) of an URL, containing an information of type T, or an error of type E.
+/** Represents the fragment (or ref) of an URL, containing an information of type T, or an error of type E.
   *
-  * @tparam T type represented by this PathSegment
-  * @tparam E type of the error that this PathSegment produces on "illegal" url paths.
+  * @tparam T
+  *   type represented by this PathSegment
+  * @tparam E
+  *   type of the error that this PathSegment produces on "illegal" url paths.
   */
 trait Fragment[T, +E] extends UrlPart[T, E] {
 
   import Fragment.factory
 
-  /**
-    * Extract the information contained in this fragment, as an instance of T.
+  /** Extract the information contained in this fragment, as an instance of T.
     *
-    * @param maybeFragment raw fragment information from the URL
-    * @return Right a T when the extraction was successful, and Left an error otherwise.
+    * @param maybeFragment
+    *   raw fragment information from the URL
+    * @return
+    *   Right a T when the extraction was successful, and Left an error otherwise.
     */
   def matchFragment(maybeFragment: MaybeFragment): Either[E, T]
 
   def matchRawUrl(url: String, urlStringParserGenerator: UrlStringParserGenerator): Either[E, T] =
     matchFragment(urlStringParserGenerator.parser(url).maybeFragmentObj)
 
-  /**
-    * Creates a fragment information from an instance of T.
+  /** Creates a fragment information from an instance of T.
     */
   def createFragment(t: T): MaybeFragment
 
@@ -51,9 +52,8 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
 
   def as[U](implicit codec: Codec[T, U]): Fragment[U, E] = as[U](codec.leftToRight _, codec.rightToLeft _)
 
-  /**
-    * Turns this fragment matching a `T` into a fragment matching an [[Option]] of T.
-    * It will return Some(t) if t could be extracted, and None otherwise.
+  /** Turns this fragment matching a `T` into a fragment matching an [[Option]] of T. It will return Some(t) if t could
+    * be extracted, and None otherwise.
     *
     * The failure that happened and led to an error does not matter: it will result in None, no matter what.
     */
@@ -61,21 +61,24 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
     matchFragment(_) match {
       case Left(_)      => Right(None)
       case Right(value) => Right(Some(value))
-    }, {
+    },
+    {
       case Some(t) => createFragment(t)
       case None    => MaybeFragment(None)
     }
   )
 
-  /**
-    * Adds an extra satisfying criteria to the de-serialized output of this [[Fragment]].
-    * When the output of this [[Fragment]] does not satisfy the given predicate, the given error is returned
-    * instead.
+  /** Adds an extra satisfying criteria to the de-serialized output of this [[Fragment]]. When the output of this
+    * [[Fragment]] does not satisfy the given predicate, the given error is returned instead.
     *
-    * @param predicate criteria that the output has to verify
-    * @param error error happening when it's not the case
-    * @tparam E1 new type of the error
-    * @return a new [[Fragment]] matching the same fragment information, but only when the predicate is satisfied
+    * @param predicate
+    *   criteria that the output has to verify
+    * @param error
+    *   error happening when it's not the case
+    * @tparam E1
+    *   new type of the error
+    * @return
+    *   a new [[Fragment]] matching the same fragment information, but only when the predicate is satisfied
     */
   final def filter[E1 >: E](predicate: T => Boolean, error: MaybeFragment => E1): Fragment[T, E1] =
     Fragment.factory[T, E1](
@@ -91,19 +94,20 @@ trait Fragment[T, +E] extends UrlPart[T, E] {
     this.asInstanceOf[Fragment[T, DummyError]].filter(predicate, _ => DummyError.dummyError)
   }
 
-  /**
-    * Returns a [[Fragment]] which outputs the contents of this [[Fragment]] when result is a [[Some]] and the
-    * specified `default` value otherwise.
-    * When generating the path, it will only generate paths corresponding to the [[Some]] case.
+  /** Returns a [[Fragment]] which outputs the contents of this [[Fragment]] when result is a [[Some]] and the specified
+    * `default` value otherwise. When generating the path, it will only generate paths corresponding to the [[Some]]
+    * case.
     *
-    * @note This method is only available when `T =:= Option[U]`.
+    * @note
+    *   This method is only available when `T =:= Option[U]`.
     *
-    * @param default default value when output is empty
+    * @param default
+    *   default value when output is empty
     */
   final def getOrElse[U](default: => U)(implicit ev: T =:= Option[U]): Fragment[U, E] =
     factory[U, E](
       (maybeFragment: MaybeFragment) => matchFragment(maybeFragment).map(ev(_).getOrElse(default)),
-      //(u: U) => createFragment(ev.flip(Some(u)))
+      // (u: U) => createFragment(ev.flip(Some(u)))
       // we keep the ugliness below while supporting 2.12 todo[scala3] remove
       (u: U) => createFragment(Some(u).asInstanceOf[T])
     )
@@ -118,14 +122,13 @@ object Fragment {
       def createFragment(t: T): MaybeFragment = generator(t)
     }
 
-  /**
-    * Creates a fragment matching any element of type `T`, as long as the [[urldsl.vocabulary.FromString]] can
+  /** Creates a fragment matching any element of type `T`, as long as the [[urldsl.vocabulary.FromString]] can
     * de-serialize it.
     *
     * If the fragment is missing, returns an error.
     */
-  def fragment[T, A](
-      implicit fromString: FromString[T, A],
+  def fragment[T, A](implicit
+      fromString: FromString[T, A],
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A]
   ): Fragment[T, A] = factory[T, A](
@@ -136,14 +139,13 @@ object Fragment {
     (printer.apply _).andThen(Some(_)).andThen(MaybeFragment.apply)
   )
 
-  /**
-    * Creates a fragment matching any element of type `T`, as long as the [[urldsl.vocabulary.FromString]] can
+  /** Creates a fragment matching any element of type `T`, as long as the [[urldsl.vocabulary.FromString]] can
     * de-serialize it.
     *
     * If the fragment is missing, returns None.
     */
-  final def maybeFragment[T, A](
-      implicit fromString: FromString[T, A],
+  final def maybeFragment[T, A](implicit
+      fromString: FromString[T, A],
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A]
   ): Fragment[Option[T], A] = factory[Option[T], A](
@@ -163,8 +165,8 @@ object Fragment {
     (_: Unit) => MaybeFragment(None)
   )
 
-  implicit def asFragment[T, A](t: T)(
-      implicit fromString: FromString[T, A],
+  implicit def asFragment[T, A](t: T)(implicit
+      fromString: FromString[T, A],
       printer: Printer[T],
       fragmentMatchingError: FragmentMatchingError[A],
       classTag: ClassTag[T]
@@ -173,11 +175,12 @@ object Fragment {
       case MaybeFragment(None) => Left(fragmentMatchingError.missingFragmentError)
       case MaybeFragment(Some(fragment)) =>
         fromString(fragment) match {
-          case Left(value)  => Left(value)
-          case Right(decodedValue) => decodedValue match {
-            case value: T if value == t => Right(())
-            case _ => Left(fragmentMatchingError.wrongValue(decodedValue, t))
-          }
+          case Left(value) => Left(value)
+          case Right(decodedValue) =>
+            decodedValue match {
+              case value: T if value == t => Right(())
+              case _                      => Left(fragmentMatchingError.wrongValue(decodedValue, t))
+            }
         }
     },
     _ => MaybeFragment(Some(printer.print(t)))

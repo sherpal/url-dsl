@@ -1,7 +1,6 @@
 package urldsl.vocabulary
 
-/**
-  * Represents a bijection between `Left` and `Right`.
+/** Represents a bijection between `Left` and `Right`.
   *
   * This bijection is supposed to be "exception-free", and be an actual bijection.
   */
@@ -26,8 +25,7 @@ object Codec {
     def rightToLeft(right: U): T = uToT(right)
   }
 
-  implicit def composeCodecs[Left, Middle, Right](
-      implicit
+  implicit def composeCodecs[Left, Middle, Right](implicit
       leftCodec: Codec[Left, Middle],
       rightCodec: Codec[Middle, Right]
   ): Codec[Left, Right] = leftCodec ++ rightCodec

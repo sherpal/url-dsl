@@ -1,8 +1,7 @@
 package urldsl.errors
 import urldsl.vocabulary.Segment
 
-/**
-  * Error type with only one instance, for when you only care about knowing whether the error exists.
+/** Error type with only one instance, for when you only care about knowing whether the error exists.
   */
 sealed trait DummyError
 

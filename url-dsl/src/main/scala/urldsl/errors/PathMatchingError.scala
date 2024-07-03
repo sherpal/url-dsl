@@ -2,14 +2,14 @@ package urldsl.errors
 
 import urldsl.vocabulary.Segment
 
-/**
-  * You can implement this trait for your own error type `A`, a giving an implicit instance in the companion object of
+/** You can implement this trait for your own error type `A`, a giving an implicit instance in the companion object of
   * `A` so that it is available for all pre-defined [[urldsl.language.PathSegment]].
   *
   * @example
-  *          See implementations of [[DummyError]] or [[SimpleParamMatchingError]]
+  *   See implementations of [[DummyError]] or [[SimpleParamMatchingError]]
   *
-  * @tparam A type of the error.
+  * @tparam A
+  *   type of the error.
   */
 trait PathMatchingError[+A] {
 

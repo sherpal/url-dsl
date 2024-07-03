@@ -5,8 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import urldsl.errors.SimpleFragmentMatchingError
 import urldsl.language.Fragment
 
-/**
-  * This class exposes some example of usage of the [[urldsl.language.Fragment]] class.
+/** This class exposes some example of usage of the [[urldsl.language.Fragment]] class.
   *
   * The `sampleUrl` and `sampleUrlWithoutFragment` used throughout this example class is defined in the
   * [[urldsl.examples]] package object.
@@ -17,19 +16,17 @@ final class FragmentExamples extends AnyFlatSpec with Matchers {
 
   "Some matching examples" should "work" in {
 
-    /**
-      * We can ask that the fragment should be some specific value.
-      * Note that unlike [[urldsl.language.PathSegment]], there is no "root" element and hence, we need to cast an
-      * element by hand into a [[urldsl.language.Fragment]]. There is still an implicit conversion, but it will be
-      * called only in a place where you ask for a [[urldsl.language.Fragment]] (see below)
+    /** We can ask that the fragment should be some specific value. Note that unlike [[urldsl.language.PathSegment]],
+      * there is no "root" element and hence, we need to cast an element by hand into a [[urldsl.language.Fragment]].
+      * There is still an implicit conversion, but it will be called only in a place where you ask for a
+      * [[urldsl.language.Fragment]] (see below)
       */
     asFragment("the-ref").matchRawUrl(sampleUrl) should be(Right(()))
 
     /** We can also ask that the fragment is present and of the desired type. */
     fragment[String].matchRawUrl(sampleUrl) should be(Right("the-ref"))
 
-    /**
-      * We can require that the fragment is not there (which would also be the case if the url ends with #!)
+    /** We can require that the fragment is not there (which would also be the case if the url ends with #!)
       */
     emptyFragment.matchRawUrl(sampleUrl) should be(Left(SimpleFragmentMatchingError.FragmentWasPresent("the-ref")))
     emptyFragment.matchRawUrl(sampleUrlWithoutFragment) should be(Right(()))

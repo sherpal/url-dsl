@@ -74,8 +74,7 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
     pathSegment.createPath(path, generator) ++ "?" ++ queryParams.createParamsString(params, generator)
 
   def &[OtherParamsType, ParamsError1 >: ParamsError](otherParams: QueryParameters[OtherParamsType, ParamsError1])(
-      implicit
-      c: Composition[ParamsType, OtherParamsType]
+      implicit c: Composition[ParamsType, OtherParamsType]
   ): PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError1] =
     new PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError1](
       pathSegment,
