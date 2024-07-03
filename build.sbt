@@ -1,7 +1,6 @@
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 import xerial.sbt.Sonatype._
 
-
 ThisBuild / scalacOptions ++= Seq( // use ++= to add to existing options
   "-encoding",
   "utf8", // if an option takes an arg, supply it on the same line
@@ -28,13 +27,11 @@ inThisBuild(
         url("https://github.com/sherpal")
       )
     ),
-    crossScalaVersions := Seq("3.3.3", "2.13.14", "2.12.19"),
+    crossScalaVersions := Seq("3.3.1", "2.13.14", "2.12.19"),
     scalaVersion := crossScalaVersions.value.head,
     autoAPIMappings := true
   )
 )
-
-
 
 lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -56,7 +53,8 @@ lazy val `url-dsl` = crossProject(JSPlatform, JVMPlatform)
     scalacOptions ++= sys.env.get("CI").map { _ =>
       val localSourcesPath = (LocalRootProject / baseDirectory).value.toURI
       val remoteSourcesPath = s"https://raw.githubusercontent.com/sherpal/url-dsl/${git.gitHeadCommit.value.get}/"
-      val sourcesOptionName = if (scalaVersion.value.startsWith("2.")) "-P:scalajs:mapSourceURI" else "-scalajs-mapSourceURI"
+      val sourcesOptionName =
+        if (scalaVersion.value.startsWith("2.")) "-P:scalajs:mapSourceURI" else "-scalajs-mapSourceURI"
 
       s"${sourcesOptionName}:$localSourcesPath->$remoteSourcesPath"
     }
