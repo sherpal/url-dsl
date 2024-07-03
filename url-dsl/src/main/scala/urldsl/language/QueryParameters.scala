@@ -9,19 +9,19 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
 
   import QueryParameters._
 
-  /**
-    * Tries to match the map of [[urldsl.vocabulary.Param]]s to create an instance of `Q`.
-    * If it can not, it returns an error indicating the reason of the failure.
-    * If it could, it returns the value of `Q`, as well as the list of unused parameters.
+  /** Tries to match the map of [[urldsl.vocabulary.Param]]s to create an instance of `Q`. If it can not, it returns an
+    * error indicating the reason of the failure. If it could, it returns the value of `Q`, as well as the list of
+    * unused parameters.
     *
     * @example
-    *           For example, if you try to match a param "name" as String and "age" as Int, calling matchParams on
-    *           Map("name" -> Param(List("Alice")), "age" -> Param(List("24"), "year" -> Param(List("2020")))
-    *           will return
-    *           Right(ParamMatchOutput(("Alice", 24), Map("year" -> Param(List("2020")))
+    *   For example, if you try to match a param "name" as String and "age" as Int, calling matchParams on Map("name" ->
+    *   Param(List("Alice")), "age" -> Param(List("24"), "year" -> Param(List("2020"))) will return
+    *   Right(ParamMatchOutput(("Alice", 24), Map("year" -> Param(List("2020")))
     *
-    * @param params The map of [[urldsl.vocabulary.Param]] to match this path segment again.
-    * @return The "de-serialized" element with unused parameters, if successful.
+    * @param params
+    *   The map of [[urldsl.vocabulary.Param]] to match this path segment again.
+    * @return
+    *   The "de-serialized" element with unused parameters, if successful.
     */
   def matchParams(params: Map[String, Param]): Either[A, ParamMatchOutput[Q]]
 
@@ -34,8 +34,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
   def matchQueryString(queryString: String, decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder): Either[A, Q] =
     matchParams(decoder.decodeParams(queryString)).map(_.output)
 
-  /**
-    * Generate a map of parameters representing the argument `q`.
+  /** Generate a map of parameters representing the argument `q`.
     *
     * `matchParams` and `createParams` should be (functional) inverse of each other. That is,
     * `this.matchParams(this.createParams(q)) == Right(ParamMathOutput(q, Map()))` (this property is called
@@ -43,15 +42,13 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     */
   def createParams(q: Q): Map[String, Param]
 
-  /**
-    * Generates a Map of parameters representing the argument `q`. The keys are not encoded, but the values are lists of
+  /** Generates a Map of parameters representing the argument `q`. The keys are not encoded, but the values are lists of
     * encoded strings.
     */
   final def createParamsMap(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): Map[String, List[String]] =
     encoder.makeParamsMap(createParams(q))
 
-  /**
-    * Generates the query string representing the argument `q`. This String can be used to be part of a URL.
+  /** Generates the query string representing the argument `q`. This String can be used to be part of a URL.
     */
   final def createParamsString(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     encoder.makeParams(createParams(q))
@@ -59,15 +56,16 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
   final def createPart(q: Q, encoder: UrlStringGenerator = UrlStringGenerator.default): String =
     createParamsString(q, encoder)
 
-  /**
-    * Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[Composition]]
+  /** Adds `that` QueryParameters to `this` one, "tupling" the returned type with the implicit [[Composition]]
     *
     * The matching and writing of strings is functionally commutative under `&`, but the returned type `Q` is not. So,
     * if you have two parameters, one matching an Int and the other one a String, depending on the order in which `&` is
     * called, you can end up with "Q = (Int, String)" or "Q = (String, Int)". This property is called
     * "QuasiCommutativity" in the tests.
     */
-  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit c: Composition[Q, R]): QueryParameters[c.Composed, A1] =
+  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit
+      c: Composition[Q, R]
+  ): QueryParameters[c.Composed, A1] =
     factory[c.Composed, A1](
       (params: Map[String, Param]) =>
         for {
@@ -82,8 +80,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
       }
     )
 
-  /**
-    * When these query parameters return an error, transform it to None instead.
+  /** When these query parameters return an error, transform it to None instead.
     *
     * This should be used to represent (possibly) missing parameters.
     */
@@ -96,21 +93,21 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     _.map(createParams).getOrElse(Map())
   )
 
-  /**
-    * Adds an extra satisfying criteria to the output of this [[QueryParameters]].
-    * If the output satisfies the given `predicate`, then it is left unchanged. Otherwise, it returns the given
-    * `error`.
+  /** Adds an extra satisfying criteria to the output of this [[QueryParameters]]. If the output satisfies the given
+    * `predicate`, then it is left unchanged. Otherwise, it returns the given `error`.
     *
-    * Note that it doesn't check that arguments given to `createParams` satisfy this predicate
-    * // todo[behaviour]: should that change?
+    * Note that it doesn't check that arguments given to `createParams` satisfy this predicate // todo[behaviour]:
+    * should that change?
     *
-    * @example {{{
-    *           param[Int]("age").filter(_ >= 0, (params: Map[String, Param]) => someError(params))
-    * }}}
+    * @example
+    *   {{{ param[Int]("age").filter(_ >= 0, (params: Map[String, Param]) => someError(params)) }}}
     *
-    * @param predicate the additional predicate that the output must satisfy
-    * @param error     the generated error in case it does not satisfy it
-    * @return          a new [[QueryParameters]] instance with the same types
+    * @param predicate
+    *   the additional predicate that the output must satisfy
+    * @param error
+    *   the generated error in case it does not satisfy it
+    * @return
+    *   a new [[QueryParameters]] instance with the same types
     */
   final def filter[A1 >: A](predicate: Q => Boolean, error: Map[String, Param] => A1): QueryParameters[Q, A1] = factory(
     (params: Map[String, Param]) =>
@@ -126,8 +123,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     this.asInstanceOf[QueryParameters[Q, DummyError]].filter(predicate, _ => DummyError.dummyError)
   }
 
-  /**
-    * Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
+  /** Casts this [[QueryParameters]] to the new type R. Note that the [[urldsl.vocabulary.Codec]] must be an
     * exception-free bijection between Q and R.
     */
   final def as[R](implicit codec: Codec[Q, R]): QueryParameters[R, A] = factory(
@@ -135,8 +131,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     (codec.rightToLeft _).andThen(createParams)
   )
 
-  /**
-    * Associates this [[QueryParameters]] with the given [[Fragment]] in order to match raw urls satisfying both
+  /** Associates this [[QueryParameters]] with the given [[Fragment]] in order to match raw urls satisfying both
     * conditions, and returning the outputs from both.
     *
     * The path part of the url will be *ignored* (and will return Unit).
@@ -179,7 +174,7 @@ object QueryParameters {
         .map(_.map(ParamMatchOutput(_, params - paramName))) // consumes that param
         .getOrElse(onParameterNotFound(params)),
     creating.andThen(paramName -> _).andThen(Map(_))
-)
+  )
 
   final def simpleQueryParam[Q, A](
       paramName: String,
@@ -191,12 +186,12 @@ object QueryParameters {
       matching,
       creating,
       onParameterNotFound = _ => Left(paramMatchingError.missingParameterError(paramName))
-  )
+    )
 
   final def param[Q, A](
       paramName: String
-  )(
-      implicit fromString: FromString[Q, A],
+  )(implicit
+      fromString: FromString[Q, A],
       printer: Printer[Q],
       paramMatchingError: ParamMatchingError[A]
   ): QueryParameters[Q, A] =
@@ -211,8 +206,8 @@ object QueryParameters {
 
   final def listParam[Q, A](
       paramName: String
-  )(
-      implicit fromString: FromString[Q, A],
+  )(implicit
+      fromString: FromString[Q, A],
       printer: Printer[Q],
       paramMatchingError: ParamMatchingError[A]
   ): QueryParameters[List[Q], A] =

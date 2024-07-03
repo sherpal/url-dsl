@@ -10,7 +10,7 @@ import scala.util.Try
 
 //noinspection TypeAnnotation
 abstract class FragmentProperties[E](val impl: FragmentImpl[E], val error: FragmentMatchingError[E], name: String)(
-  implicit errorFromThrowable: ErrorFromThrowable[E]
+    implicit errorFromThrowable: ErrorFromThrowable[E]
 ) extends Properties(name) {
 
   import impl._
@@ -42,7 +42,7 @@ abstract class FragmentProperties[E](val impl: FragmentImpl[E], val error: Fragm
   property("Generating maybeFragment when defined is the same as fragment") = forAll(Gen.option(Gen.asciiStr)) {
     (str: Option[String]) =>
       maybeStringFragment.createPart(str) == (str match {
-        case None => ""
+        case None    => ""
         case Some(s) => stringFragment.createPart(s)
       })
 
@@ -119,7 +119,10 @@ abstract class FragmentProperties[E](val impl: FragmentImpl[E], val error: Fragm
 
     Prop(
       intFragment
-        .filter(predicate, _ => ErrorFromThrowable[E].fromThrowable(new IllegalArgumentException("Non positive number")))
+        .filter(
+          predicate,
+          _ => ErrorFromThrowable[E].fromThrowable(new IllegalArgumentException("Non positive number"))
+        )
         .as[PosInt]
         .?
         .matchFragment(MaybeFragment(maybeX.map(_.toString))) == Right(maybeX.filter(predicate).map(PosInt.apply))
@@ -128,24 +131,33 @@ abstract class FragmentProperties[E](val impl: FragmentImpl[E], val error: Fragm
     )
   }
 
-  property("Get or else on positive ints caps to 1") = forAll(Gen.option(Gen.choose(-1000, 1000))) { (maybeX: Option[Int]) =>
-    case class PosInt(value: Int)
-    val one = PosInt(1)
+  property("Get or else on positive ints caps to 1") = forAll(Gen.option(Gen.choose(-1000, 1000))) {
+    (maybeX: Option[Int]) =>
+      case class PosInt(value: Int)
+      val one = PosInt(1)
 
-    implicit def codec: Codec[Int, PosInt] = Codec.factory(PosInt.apply, _.value)
+      implicit def codec: Codec[Int, PosInt] = Codec.factory(PosInt.apply, _.value)
 
-    val predicate: Int => Boolean = _ > 0
+      val predicate: Int => Boolean = _ > 0
 
-    val fragment = intFragment
-      .filter(predicate, _ => ErrorFromThrowable[E].fromThrowable(new IllegalArgumentException("Non positive number")))
-      .as[PosInt]
-      .?.getOrElse(one)
+      val fragment = intFragment
+        .filter(
+          predicate,
+          _ => ErrorFromThrowable[E].fromThrowable(new IllegalArgumentException("Non positive number"))
+        )
+        .as[PosInt]
+        .?
+        .getOrElse(one)
 
-    Prop(
-      fragment.matchFragment(MaybeFragment(maybeX.map(_.toString))) == Right(maybeX.filter(predicate).map(PosInt.apply).getOrElse(one))
-    ) && Prop(
-      fragment.createFragment(maybeX.fold(one)(PosInt.apply)) == MaybeFragment(maybeX.map(_.toString).orElse(Some("1")))
-    )
+      Prop(
+        fragment.matchFragment(MaybeFragment(maybeX.map(_.toString))) == Right(
+          maybeX.filter(predicate).map(PosInt.apply).getOrElse(one)
+        )
+      ) && Prop(
+        fragment.createFragment(maybeX.fold(one)(PosInt.apply)) == MaybeFragment(
+          maybeX.map(_.toString).orElse(Some("1"))
+        )
+      )
   }
 
 }

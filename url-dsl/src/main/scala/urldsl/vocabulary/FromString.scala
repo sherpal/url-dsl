@@ -19,26 +19,24 @@ object FromString extends FromStringWithNumeric {
   def factory[T, A](read: String => Either[A, T]): FromString[T, A] = (str: String) => read(str)
 
   implicit def stringFromString[A]: FromString[String, A] = factory(Right(_))
-  implicit def intFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[Int, A] = factory(
-    s =>
-      Try(s.toInt) match {
-        case Success(int)       => Right(int)
-        case Failure(exception) => Left(fromThrowable.fromThrowable(exception))
-      }
+  implicit def intFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[Int, A] = factory(s =>
+    Try(s.toInt) match {
+      case Success(int)       => Right(int)
+      case Failure(exception) => Left(fromThrowable.fromThrowable(exception))
+    }
   )
-  implicit def doubleFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[Double, A] = factory(
-    s =>
-      Try(s.toDouble) match {
-        case Success(double)    => Right(double)
-        case Failure(exception) => Left(fromThrowable.fromThrowable(exception))
-      }
+  implicit def doubleFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[Double, A] = factory(s =>
+    Try(s.toDouble) match {
+      case Success(double)    => Right(double)
+      case Failure(exception) => Left(fromThrowable.fromThrowable(exception))
+    }
   )
-  implicit def booleanFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[Boolean, A] = factory(
-    s =>
+  implicit def booleanFromString[A](implicit fromThrowable: ErrorFromThrowable[A]): FromString[Boolean, A] =
+    factory(s =>
       Try(s.toBoolean) match {
         case Success(bool) => Right(bool)
         case Failure(_)    => Left(fromThrowable.fromThrowable(new Exception(s"$s is not a Boolean")))
       }
-  )
+    )
 
 }

@@ -2,8 +2,7 @@ package urldsl.errors
 
 sealed trait SimpleParamMatchingError
 
-/**
-  * An implementation of [[ParamMatchingError]] that simply wraps the trigger of the error inside its components.
+/** An implementation of [[ParamMatchingError]] that simply wraps the trigger of the error inside its components.
   */
 object SimpleParamMatchingError {
 

@@ -14,7 +14,7 @@ object Param {
       .map(_.split("=").toList)
       .toList
       .collect {
-        case first :: Nil if first.nonEmpty => first -> ""
+        case first :: Nil if first.nonEmpty           => first -> ""
         case first :: second :: Nil if first.nonEmpty => first -> second
       }
       .groupBy(_._1)

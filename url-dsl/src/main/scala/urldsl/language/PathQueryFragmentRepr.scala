@@ -11,7 +11,14 @@ import urldsl.vocabulary.{
   Segment
 }
 
-final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError, FragmentType, +FragmentError] private[language] (
+final class PathQueryFragmentRepr[
+    PathType,
+    +PathError,
+    ParamsType,
+    +ParamsError,
+    FragmentType,
+    +FragmentError
+] private[language] (
     pathSegment: PathSegment[PathType, PathError],
     queryParams: QueryParameters[ParamsType, ParamsError],
     fragment: Fragment[FragmentType, FragmentError]
@@ -73,8 +80,8 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
   }
 
   /** If this instance actually only bear path information, retrieves that information only. */
-  def pathOnly(
-      implicit ev1: Unit =:= ParamsType,
+  def pathOnly(implicit
+      ev1: Unit =:= ParamsType,
       ev2: Unit =:= FragmentType
   ): UrlPart[PathType, PathQueryFragmentError[PathError, ParamsError, FragmentError]] =
     UrlPart.factory(
@@ -83,8 +90,8 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
     )
 
   /** If this instance actually only bear query information, retrieves that information only. */
-  def queryOnly(
-      implicit ev1: Unit =:= PathType,
+  def queryOnly(implicit
+      ev1: Unit =:= PathType,
       ev2: Unit =:= FragmentType
   ): UrlPart[ParamsType, PathQueryFragmentError[PathError, ParamsError, FragmentError]] =
     UrlPart.factory(
@@ -93,8 +100,8 @@ final class PathQueryFragmentRepr[PathType, +PathError, ParamsType, +ParamsError
     )
 
   /** If this instance actually only bear fragment information, retrieves that information only. */
-  def fragmentOnly(
-      implicit ev1: Unit =:= ParamsType,
+  def fragmentOnly(implicit
+      ev1: Unit =:= ParamsType,
       ev2: Unit =:= PathType
   ): UrlPart[FragmentType, PathQueryFragmentError[PathError, ParamsError, FragmentError]] =
     UrlPart.factory(

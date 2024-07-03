@@ -5,8 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import urldsl.errors.SimpleParamMatchingError
 import urldsl.language.QueryParameters
 
-/**
-  * This class exposes some example of usage of the [[urldsl.language.QueryParameters]] class.
+/** This class exposes some example of usage of the [[urldsl.language.QueryParameters]] class.
   *
   * The `sampleUrl` used throughout this example class is defined in the [[urldsl.examples]] package object.
   */
@@ -16,9 +15,8 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
 
   "Some matching examples" should "work" in {
 
-    /**
-      * You can match a simple information from the query parameter.
-      * This param will look for the parameter "bar" in the query string.
+    /** You can match a simple information from the query parameter. This param will look for the parameter "bar" in the
+      * query string.
       */
     param[String]("bar").matchRawUrl(sampleUrl) should be(Right("stuff"))
 
@@ -34,10 +32,8 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     /** Parameter encoding a tuple */
     param[(Int, Int)]("tuple").matchRawUrl(sampleUrl) should be(Right((11, 22)))
 
-    /**
-      * Sometimes parameters are actually a list of parameters with the same key. You can read this as well.
-      * Note that we sort the list for the check, since the actual order is somewhat unpredictable (although
-      * deterministic).
+    /** Sometimes parameters are actually a list of parameters with the same key. You can read this as well. Note that
+      * we sort the list for the check, since the actual order is somewhat unpredictable (although deterministic).
       */
     listParam[Int]("other").matchRawUrl(sampleUrl).map(_.sorted) should be(Right(List(2, 3)))
 
@@ -57,9 +53,7 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       Right(("other stuff", "stuff"))
     )
 
-
-    /**
-      * If you want your parameters to match optionally, you can ascribe your [[urldsl.language.QueryParameters]] with
+    /** If you want your parameters to match optionally, you can ascribe your [[urldsl.language.QueryParameters]] with
       * `.?`.
       */
     param[String]("does-not-exist").?.matchRawUrl(sampleUrl) should be(Right(None))
@@ -72,8 +66,7 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     param[Int]("bar").?.matchRawUrl(sampleUrl) should be(Right(None))
     param[Int]("empty").?.matchRawUrl(sampleUrl) should be(Right(None))
 
-    /**
-      * [[urldsl.language.QueryParameters]] have a filter method allowing to restrict the things it matches.
+    /** [[urldsl.language.QueryParameters]] have a filter method allowing to restrict the things it matches.
       */
     param[String]("bar").filter(_.length > 3, _ => "too short").matchRawUrl(sampleUrl) should be(
       Right(
@@ -87,9 +80,8 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       )
     )
 
-    /**
-      * The filter and ? combinators can be conveniently combined together.
-      * This is because ? erases any previously encountered error and returns None.
+    /** The filter and ? combinators can be conveniently combined together. This is because ? erases any previously
+      * encountered error and returns None.
       */
     param[String]("bar")
       .filter(_.length > 10, _ => SimpleParamMatchingError.FromThrowable(new RuntimeException("too short")))
@@ -114,8 +106,7 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
       Left(true)
     )
 
-    /**
-      * [[urldsl.language.QueryParameters]] are immutable objects, but used in a single parameter search, this fact is
+    /** [[urldsl.language.QueryParameters]] are immutable objects, but used in a single parameter search, this fact is
       * probably often useless. However, you can re-use it to combine with other parameters.
       */
     val p = param[Int]("other")
@@ -142,7 +133,8 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     listParam[String]("p1").createPart(Nil) should be("")
 
     /** Flatenning of tuple param */
-    (param[String]("p1") & param[(Int, Int)]("p2") & listParam[String]("p3")).createPart(("hey", 11, 22, List("one", "two"))) should be(
+    (param[String]("p1") & param[(Int, Int)]("p2") & listParam[String]("p3"))
+      .createPart(("hey", 11, 22, List("one", "two"))) should be(
       """p1=hey&p2=11-22&p3=one&p3=two"""
     )
 

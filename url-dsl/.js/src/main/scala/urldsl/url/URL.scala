@@ -8,22 +8,19 @@ import scala.scalajs.js.annotation.JSGlobal
 @JSGlobal
 private[url] final class URL(url: String) extends js.Object {
 
-  /**
-    * Is a DOMString containing an initial '/' followed by the path of the URL.
+  /** Is a DOMString containing an initial '/' followed by the path of the URL.
     *
     * MDN
     */
   var pathname: String = js.native
 
-  /**
-    * Is a DOMString containing a '?' followed by the parameters of the URL.
+  /** Is a DOMString containing a '?' followed by the parameters of the URL.
     *
     * MDN
     */
   var search: String = js.native
 
-  /**
-    * Is a DOMString containing a '#' followed by the fragment identifier of the URL.
+  /** Is a DOMString containing a '#' followed by the fragment identifier of the URL.
     *
     * MDN
     */

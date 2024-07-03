@@ -35,9 +35,16 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
   property("generic unary path segment can be called") = forAll { (x: Int, s: String) =>
     implicit def - : PathMatchingError[E] = error
     val path = PathSegment.unaryPathSegment[Int, E](x) / PathSegment.unaryPathSegment[String, E](s)
-    Prop(path.matchSegments(List(
-      Segment(x.toString), Segment(s)
-    )).map(_.output) == Right(())) && (Prop(s.nonEmpty) ==> Prop(
+    Prop(
+      path
+        .matchSegments(
+          List(
+            Segment(x.toString),
+            Segment(s)
+          )
+        )
+        .map(_.output) == Right(())
+    ) && (Prop(s.nonEmpty) ==> Prop(
       path.createPath() == s"$x/${UrlStringGenerator.default.encode(s)}"
     )) :|
       s"""Expected: $x/${UrlStringGenerator.default.encode(s)}
@@ -108,7 +115,9 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
   property("oneOfValuesMatches") = forAllNoShrink(Gen.nonEmptyListOf(segmentGen)) { (ls: List[Segment]) =>
     val path = $ / oneOf[String](ls.head.content, ls.tail.map(_.content): _*)
 
-    ls.forall(s => path.matchSegments(List(s)).isRight) && (Prop(path.createPath() == UrlStringGenerator.default.encode(ls.head.content)) :|
+    ls.forall(s => path.matchSegments(List(s)).isRight) && (Prop(
+      path.createPath() == UrlStringGenerator.default.encode(ls.head.content)
+    ) :|
       s"""Obtained: ${path.createPath()}
          |Expected: ${UrlStringGenerator.default.encode(ls.head.content)}
          |""".stripMargin)
@@ -140,15 +149,16 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
     segment[Int].filter(_ < 0, _ => error.malformed(s"$x should be negative")).createPath(x) == x.toString
   }
 
-  property("Or operator can target both types") = forAll(Gen.choose(-100, 100), Gen.alphaNumStr) { (x: Int, s: String) =>
-    val path = segment[Int] || segment[String]
+  property("Or operator can target both types") = forAll(Gen.choose(-100, 100), Gen.alphaNumStr) {
+    (x: Int, s: String) =>
+      val path = segment[Int] || segment[String]
 
-    Prop(Try(s.toInt).isFailure) ==> {
-      // noinspection ComparingUnrelatedTypes
-      Prop(path.matchSegments(List(x.toString)) == Right(PathMatchOutput(Left(x), Nil))) && Prop(
-        path.matchSegments(List(s)) == Right(PathMatchOutput(Right(s), Nil))
-      ) && Prop(path.createPath(Left(x)) == x.toString) && Prop(path.createPath(Right(s)) == s)
-    }
+      Prop(Try(s.toInt).isFailure) ==> {
+        // noinspection ComparingUnrelatedTypes
+        Prop(path.matchSegments(List(x.toString)) == Right(PathMatchOutput(Left(x), Nil))) && Prop(
+          path.matchSegments(List(s)) == Right(PathMatchOutput(Right(s), Nil))
+        ) && Prop(path.createPath(Left(x)) == x.toString) && Prop(path.createPath(Right(s)) == s)
+      }
   }
 
   property("Bijection works with container") = forAll { (x: Int) =>
