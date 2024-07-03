@@ -28,7 +28,7 @@ inThisBuild(
         url("https://github.com/sherpal")
       )
     ),
-    crossScalaVersions := Seq("3.2.0", "2.13.5", "2.12.13"),
+    crossScalaVersions := Seq("3.3.3", "2.13.14", "2.12.19"),
     scalaVersion := crossScalaVersions.value.head,
     autoAPIMappings := true
   )
