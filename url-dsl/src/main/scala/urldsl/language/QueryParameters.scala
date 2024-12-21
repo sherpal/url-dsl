@@ -5,7 +5,7 @@ import urldsl.errors.{DummyError, ParamMatchingError, SimpleParamMatchingError}
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
+trait QueryParameters[Q, A] extends UrlPart[Q, A] {
 
   import QueryParameters._
 
@@ -63,10 +63,10 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     * called, you can end up with "Q = (Int, String)" or "Q = (String, Int)". This property is called
     * "QuasiCommutativity" in the tests.
     */
-  final def &[R, A1 >: A](that: QueryParameters[R, A1])(implicit
+  final def &[R](that: QueryParameters[R, A])(implicit
       c: Composition[Q, R]
-  ): QueryParameters[c.Composed, A1] =
-    factory[c.Composed, A1](
+  ): QueryParameters[c.Composed, A] =
+    factory[c.Composed, A](
       (params: Map[String, Param]) =>
         for {
           firstMatch <- this.matchParams(params)
@@ -109,7 +109,7 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     * @return
     *   a new [[QueryParameters]] instance with the same types
     */
-  final def filter[A1 >: A](predicate: Q => Boolean, error: Map[String, Param] => A1): QueryParameters[Q, A1] = factory(
+  final def filter(predicate: Q => Boolean, error: Map[String, Param] => A): QueryParameters[Q, A] = factory(
     (params: Map[String, Param]) =>
       matchParams(params).filterOrElse(((_: ParamMatchOutput[Q]).output).andThen(predicate), error(params)),
     createParams
@@ -131,16 +131,6 @@ trait QueryParameters[Q, +A] extends UrlPart[Q, A] {
     (codec.rightToLeft _).andThen(createParams)
   )
 
-  /** Associates this [[QueryParameters]] with the given [[Fragment]] in order to match raw urls satisfying both
-    * conditions, and returning the outputs from both.
-    *
-    * The path part of the url will be *ignored* (and will return Unit).
-    */
-  final def withFragment[FragmentType, FragmentError](
-      fragment: Fragment[FragmentType, FragmentError]
-  ): PathQueryFragmentRepr[Unit, Nothing, Q, A, FragmentType, FragmentError] =
-    new PathQueryFragmentRepr(PathSegment.root, this, fragment)
-
 }
 
 object QueryParameters {
@@ -153,13 +143,13 @@ object QueryParameters {
     def createParams(q: Q): Map[String, Param] = creating(q)
   }
 
-  final def empty: QueryParameters[Unit, Nothing] = factory[Unit, Nothing](
+  final def empty[A]: QueryParameters[Unit, A] = factory[Unit, A](
     (params: Map[String, Param]) => Right(ParamMatchOutput((), params)),
     _ => Map()
   )
 
   /** Alias for empty which seems to better reflect the semantic. */
-  final def ignore: QueryParameters[Unit, Nothing] = empty
+  final def ignore[A]: QueryParameters[Unit, A] = empty
 
   final def simpleQueryParam[Q, A](
       paramName: String,

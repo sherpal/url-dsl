@@ -8,7 +8,7 @@ import urldsl.vocabulary.{FromString, MaybeFragment}
 
 final class FragmentSpec extends munit.FunSuite {
 
-  val fragment: Fragment[Unit, Any] = 5
+  val fragment: Fragment[Unit, SimpleFragmentMatchingError] = 5
   val url = "http://localhost/#5"
   val error: FragmentMatchingError[SimpleFragmentMatchingError] = SimpleFragmentMatchingError.itIsFragmentMatchingError
 

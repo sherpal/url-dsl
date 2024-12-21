@@ -53,7 +53,7 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
   }
 
   property("remainingSegmentsAndEndOfSegments") = forAll(Gen.listOf[String](Gen.asciiStr)) { (ls: List[String]) =>
-    ($ / remainingSegments / endOfSegments).matchSegments(ls.map(Segment(_))) == Right(PathMatchOutput(ls, Nil))
+    ($ / remainingSegments).matchSegments(ls.map(Segment(_))) == Right(PathMatchOutput(ls, Nil))
   }
 
   property("ExactMatchingString") = forAll(Gen.listOfN[String](5, Gen.asciiStr)) { (ls: List[String]) =>
@@ -79,14 +79,14 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
     ls match {
       case Nil => true
       case head :: Nil =>
-        ($ / segment[Int] / endOfSegments).matchSegments(segments) == Right(
+        ($ / segment[Int]).matchSegments(segments) == Right(
           PathMatchOutput(
             head,
             Nil
           )
         )
       case head :: second :: Nil =>
-        ($ / segment[Int] / segment[Int] / endOfSegments).matchSegments(segments) == Right(
+        ($ / segment[Int] / segment[Int]).matchSegments(segments) == Right(
           PathMatchOutput(
             (head, second),
             Nil
@@ -103,7 +103,7 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
   }
 
   property("EndOfSegmentComplains") = forAll(Gen.nonEmptyListOf(segmentGen)) { (ls: List[Segment]) =>
-    ($ / endOfSegments).matchSegments(ls) == Left(error.endOfSegmentRequired(ls))
+    $.matchFullSegments(ls) == Left(error.endOfSegmentRequired(ls))
   }
 
   property("IntSegmentComplains") = forAllNoShrink(Gen.nonEmptyListOf(nonIntSegmentGen)) { (ls: List[Segment]) =>
@@ -181,14 +181,14 @@ abstract class PathSegmentProperties[E](val impl: PathSegmentImpl[E], val error:
   }
 
   property("provide method decodes and encodes x") = forAll { (x: Int) =>
-    val path = segment[Int].provide(x)(error, Printer[Int])
+    val path = segment[Int].provide(x)
     Prop(path.matchSegments(List(Segment(x.toString))) == Right(PathMatchOutput((), Nil))) && Prop(
       path.createPath() == x.toString
     )
   }
 
   property("provide method fails when decoding wrong value") = forAll { (x: Int, y: Int) =>
-    val path = segment[Int].provide(x)(error, Printer[Int])
+    val path = segment[Int].provide(x)
     Prop(x == y) || Prop(
       path.matchSegments(List(Segment(y.toString))) == Left(error.wrongValue(x.toString, y.toString))
     )

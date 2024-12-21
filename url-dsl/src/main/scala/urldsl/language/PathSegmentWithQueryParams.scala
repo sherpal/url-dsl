@@ -4,9 +4,9 @@ import app.tulz.tuplez.Composition
 import urldsl.url.{UrlStringDecoder, UrlStringGenerator, UrlStringParserGenerator}
 import urldsl.vocabulary._
 
-final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +ParamsError] private[language] (
-    pathSegment: PathSegment[PathType, PathError],
-    queryParams: QueryParameters[ParamsType, ParamsError]
+final class PathSegmentWithQueryParams[PathType, PathError, ParamsType, ParamsError] private[language] (
+    val pathSegment: PathSegment[PathType, PathError],
+    val queryParams: QueryParameters[ParamsType, ParamsError]
 ) extends UrlPart[UrlMatching[PathType, ParamsType], Either[PathError, ParamsError]] {
 
   def matchUrl(
@@ -73,13 +73,13 @@ final class PathSegmentWithQueryParams[PathType, +PathError, ParamsType, +Params
   ): String =
     pathSegment.createPath(path, generator) ++ "?" ++ queryParams.createParamsString(params, generator)
 
-  def &[OtherParamsType, ParamsError1 >: ParamsError](otherParams: QueryParameters[OtherParamsType, ParamsError1])(
-      implicit c: Composition[ParamsType, OtherParamsType]
-  ): PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError1] =
-    new PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError1](
+  def &[OtherParamsType](otherParams: QueryParameters[OtherParamsType, ParamsError])(implicit
+      c: Composition[ParamsType, OtherParamsType]
+  ): PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError] =
+    new PathSegmentWithQueryParams[PathType, PathError, c.Composed, ParamsError](
       pathSegment,
       (queryParams & otherParams)
-        .asInstanceOf[QueryParameters[c.Composed, ParamsError1]] // not necessary but IntelliJ complains.
+        .asInstanceOf[QueryParameters[c.Composed, ParamsError]] // not necessary but IntelliJ complains.
     )
 
   def withFragment[FragmentType, FragmentError](
