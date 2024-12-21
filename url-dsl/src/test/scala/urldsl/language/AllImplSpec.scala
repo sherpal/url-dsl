@@ -58,7 +58,7 @@ final class AllImplSpec extends AnyFlatSpec with Matchers {
   ): Fragment[T, SimpleFragmentMatchingError] = fragment
 
   "Implicit conversion" should "be called with the specified error system" in {
-    askForPath("hey").matchRawUrl(sampleUrl).isRight should be(true)
+    (root / "hey" / "you" / 23).matchRawUrl(sampleUrl).isRight should be(true)
     (anySegment / anySegment / askForPath(23)).matchRawUrl(sampleUrl) should be(Right(()))
     askForFragment("some-fragment").matchRawUrl(sampleUrl).isRight should be(true)
     (anySegment / anySegment / segment[Int]).withFragment("some-fragment").matchRawUrl(sampleUrl) should be(

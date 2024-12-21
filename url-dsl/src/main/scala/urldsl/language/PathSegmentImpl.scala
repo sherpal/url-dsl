@@ -28,9 +28,12 @@ trait PathSegmentImpl[A] {
   /** implementation of [[urldsl.errors.PathMatchingError]] for type A. */
   implicit protected val pathError: PathMatchingError[A]
 
-  val root: PathSegment[Unit, A] = PathSegment.root
-  val remainingSegments: PathSegment[List[String], A] = PathSegment.remainingSegments
-  lazy val endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
+  lazy val root: PathSegment[Unit, A] = PathSegment.root
+  lazy val remainingSegments: PathSegment[List[String], A] = PathSegment.remainingSegments
+  lazy val ignoreRemainingSegments: PathSegment[Unit, A] = remainingSegments.ignore(Nil)
+
+  @deprecated("endOfSegments is now mostly useless as matchRawUrl will fail if there are remaining segments.")
+  def endOfSegments: PathSegment[Unit, A] = PathSegment.endOfSegments
   lazy val noMatch: PathSegment[Unit, A] = PathSegment.noMatch[A]
 
   def segment[T](implicit fromString: FromString[T, A], printer: Printer[T]): PathSegment[T, A] =
@@ -54,13 +57,15 @@ trait PathSegmentImpl[A] {
       (_: Unit) => Segment(printer(t))
     )
 
+  type Path[T] = PathSegment[T, A]
+
 }
 
 object PathSegmentImpl {
 
   /** Invoker. */
   def apply[A](implicit error: PathMatchingError[A]): PathSegmentImpl[A] = new PathSegmentImpl[A] {
-    implicit protected val pathError: PathMatchingError[A] = error
+    implicit val pathError: PathMatchingError[A] = error
   }
 
 }

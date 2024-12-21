@@ -37,7 +37,7 @@ final class CombinedExamples extends AnyFlatSpec with Matchers {
     )
 
     /** And we can of course combine a [[urldsl.language.QueryParameters]] and a [[urldsl.language.Fragment]] */
-    queryPart.withFragment(fragmentPart).matchRawUrl(sampleUrl) should be(
+    (root ? queryPart).withFragment(fragmentPart).matchRawUrl(sampleUrl) should be(
       Right(PathQueryFragmentMatching((), ("stuff", List(2, 3)), "the-ref"))
     )
 
@@ -56,7 +56,7 @@ final class CombinedExamples extends AnyFlatSpec with Matchers {
       """foo/23/true#some-other-ref"""
     )
 
-    queryPart
+    (root ? queryPart)
       .withFragment(fragmentPart)
       .createPart(PathQueryFragmentMatching((), ("stuff", List(2, 3)), "the-ref")) should be(
       """?bar=stuff&other=2&other=3#the-ref"""

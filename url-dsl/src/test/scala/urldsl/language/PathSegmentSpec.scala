@@ -11,8 +11,8 @@ class PathSegmentSpec extends munit.FunSuite {
   val $ : PathSegment[Unit, DummyError] = root
 
   test("Empty path with end of segments should match the empty path") {
-    assertEquals(($ / endOfSegments).matchPath("/"), Right(()))
-    assertEquals(($ / endOfSegments).matchPath(""), Right(()))
+    assertEquals($.matchPath("/"), Right(()))
+    assertEquals($.matchPath(""), Right(()))
   }
 
   test("PathSegment should match the following segment lists") {

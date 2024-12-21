@@ -66,18 +66,23 @@ final class QueryParamsExamples extends AnyFlatSpec with Matchers {
     param[Int]("bar").?.matchRawUrl(sampleUrl) should be(Right(None))
     param[Int]("empty").?.matchRawUrl(sampleUrl) should be(Right(None))
 
+    case class TooShort() extends IllegalArgumentException("too short")
+    def tooShort: SimpleParamMatchingError = SimpleParamMatchingError.FromThrowable(TooShort())
+
     /** [[urldsl.language.QueryParameters]] have a filter method allowing to restrict the things it matches.
       */
-    param[String]("bar").filter(_.length > 3, _ => "too short").matchRawUrl(sampleUrl) should be(
+    param[String]("bar")
+      .filter(_.length > 3, _ => tooShort)
+      .matchRawUrl(sampleUrl) should be(
       Right(
         "stuff"
       )
     )
     // Note: this is poorly typed as the error type is Any, here.
-    param[String]("bar").filter(_.length > 10, _ => "too short").matchRawUrl(sampleUrl) should be(
-      Left(
-        "too short"
-      )
+    param[String]("bar")
+      .filter(_.length > 10, _ => tooShort)
+      .matchRawUrl(sampleUrl) should be(
+      Left(tooShort)
     )
 
     /** The filter and ? combinators can be conveniently combined together. This is because ? erases any previously

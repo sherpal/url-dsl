@@ -14,7 +14,7 @@ import scala.language.implicitConversions
   * @tparam A
   *   type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait PathSegment[T, +A] extends UrlPart[T, A] {
+trait PathSegment[T, A] extends UrlPart[T, A] {
 
   /** Tries to match the list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`. If it can not, it returns
     * an error indicating the reason of the failure. If it could, it returns the value of `T`, as well as the list of
@@ -30,6 +30,30 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
     *   The "de-serialized" element with unused segment, if successful.
     */
   def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]]
+
+  protected implicit def errorImpl: PathMatchingError[A]
+
+  /** Tries to match the provided list of [[urldsl.vocabulary.Segment]]s to create an instance of `T`.
+    *
+    * If it can't, it returns an error indicating the reason of the failure. If it can but there are unused segments
+    * left over, it fails with a `endOfSegmentRequired` error. If it can, it returns the output.
+    *
+    * It is thus similar to [[matchSegments]], but requiring that all segments have been consumed.
+    *
+    * @see
+    *   [[matchSegments]]
+    *
+    * @param segments
+    *   The list of [[urldsl.vocabulary.Segment]] to match this path segment again.
+    * @return
+    */
+  def matchFullSegments(segments: List[Segment]): Either[A, T] = for {
+    matchOuptput <- matchSegments(segments)
+    t <- matchOuptput.unusedSegments match {
+      case Nil      => Right(matchOuptput.output)
+      case segments => Left(errorImpl.endOfSegmentRequired(segments))
+    }
+  } yield t
 
   /** Matches the given raw `url` using the given [[urldsl.url.UrlStringParserGenerator]] for creating a
     * [[urldsl.url.UrlStringParser]].
@@ -52,10 +76,10 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
       url: String,
       urlStringParserGenerator: UrlStringParserGenerator = UrlStringParserGenerator.defaultUrlStringParserGenerator
   ): Either[A, T] =
-    matchSegments(urlStringParserGenerator.parser(url).segments).map(_.output)
+    matchFullSegments(urlStringParserGenerator.parser(url).segments)
 
   def matchPath(path: String, decoder: UrlStringDecoder = UrlStringDecoder.defaultDecoder): Either[A, T] =
-    matchSegments(decoder.decodePath(path)).map(_.output)
+    matchFullSegments(decoder.decodePath(path))
 
   /** Generate a list of segments representing the argument `t`.
     *
@@ -85,8 +109,8 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   /** Concatenates `this` [[urldsl.language.PathSegment]] with `that` one, "tupling" the types with the [[Composition]]
     * rules.
     */
-  final def /[U, A1 >: A](that: PathSegment[U, A1])(implicit c: Composition[T, U]): PathSegment[c.Composed, A1] =
-    PathSegment.factory[c.Composed, A1](
+  final def /[U](that: PathSegment[U, A])(implicit c: Composition[T, U]): PathSegment[c.Composed, A] =
+    PathSegment.factory[c.Composed, A](
       (segments: List[Segment]) =>
         for {
           firstOut <- this.matchSegments(segments)
@@ -118,8 +142,8 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
     *   - in a multi-part segment, ensure consistency between the different component (e.g., a range of two integers
     *     that should not be too large...)
     */
-  final def filter[A1 >: A](predicate: T => Boolean, error: List[Segment] => A1): PathSegment[T, A1] =
-    PathSegment.factory[T, A1](
+  final def filter(predicate: T => Boolean, error: List[Segment] => A): PathSegment[T, A] =
+    PathSegment.factory[T, A](
       (segments: List[Segment]) =>
         matchSegments(segments)
           .filterOrElse(((_: PathMatchOutput[T]).output).andThen(predicate), error(segments)),
@@ -127,7 +151,7 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
     )
 
   /** Sugar for when `A =:= DummyError` */
-  final def filter(predicate: T => Boolean)(implicit ev: A <:< DummyError): PathSegment[T, DummyError] = {
+  final def filter(predicate: T => Boolean)(implicit ev: A =:= DummyError): PathSegment[T, DummyError] = {
 //    type F[+E] = PathSegment[T, E]
 //    ev.liftCo[F].apply(this).filter(predicate, _ => DummyError.dummyError)
     // we keep the ugliness below while supporting 2.12 todo[scala3] remove this
@@ -137,8 +161,8 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   /** Builds a [[PathSegment]] that first tries to match with this one, then tries to match with `that` one. If both
     * fail, the error of the second is returned (todo[behaviour]: should that change?)
     */
-  final def ||[U, A1 >: A](that: PathSegment[U, A1]): PathSegment[Either[T, U], A1] =
-    PathSegment.factory[Either[T, U], A1](
+  final def ||[U](that: PathSegment[U, A]): PathSegment[Either[T, U], A] =
+    PathSegment.factory[Either[T, U], A](
       segments =>
         this.matchSegments(segments) match {
           case Right(output) => Right(PathMatchOutput(Left(output.output), output.unusedSegments))
@@ -172,16 +196,16 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   /** Forgets the information contained in the path parameter by injecting one. This turn this "dynamic" [[PathSegment]]
     * into a fix one.
     */
-  final def provide[A1 >: A](
+  final def provide(
       t: T
-  )(implicit pathMatchingError: PathMatchingError[A1], printer: Printer[T]): PathSegment[Unit, A1] =
-    PathSegment.factory[Unit, A1](
+  )(implicit printer: Printer[T]): PathSegment[Unit, A] =
+    PathSegment.factory[Unit, A](
       segments =>
         for {
           tMatch <- matchSegments(segments)
           PathMatchOutput(tOutput, unusedSegments) = tMatch
           unitMatched <-
-            if (tOutput != t) Left(pathMatchingError.wrongValue(printer(t), printer(tOutput)))
+            if (tOutput != t) Left(errorImpl.wrongValue(printer(t), printer(tOutput)))
             else Right(PathMatchOutput((), unusedSegments))
         } yield unitMatched,
       (_: Unit) => createSegments(t)
@@ -195,7 +219,11 @@ trait PathSegment[T, +A] extends UrlPart[T, A] {
   final def withFragment[FragmentType, FragmentError](
       fragment: Fragment[FragmentType, FragmentError]
   ): PathQueryFragmentRepr[T, A, Unit, Nothing, FragmentType, FragmentError] =
-    new PathQueryFragmentRepr(this, QueryParameters.ignore, fragment)
+    new PathQueryFragmentRepr[T, A, Unit, Nothing, FragmentType, FragmentError](
+      this,
+      QueryParameters.ignore,
+      fragment
+    )
 
 }
 
@@ -211,16 +239,18 @@ object PathSegment {
   def factory[T, A](
       matching: List[Segment] => Either[A, PathMatchOutput[T]],
       creating: T => List[Segment]
-  ): PathSegment[T, A] = new PathSegment[T, A] {
+  )(implicit errors: PathMatchingError[A]): PathSegment[T, A] = new PathSegment[T, A] {
+    protected def errorImpl: PathMatchingError[A] = errors
+
     def matchSegments(segments: List[Segment]): Either[A, PathMatchOutput[T]] = matching(segments)
 
     def createSegments(t: T): List[Segment] = creating(t)
   }
 
   /** Simple path segment that matches everything by passing segments down the line. */
-  final def empty: PathSegment[Unit, Nothing] =
-    factory[Unit, Nothing](segments => Right(PathMatchOutput((), segments)), _ => Nil)
-  final def root: PathSegment[Unit, Nothing] = empty
+  final def empty[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] =
+    factory[Unit, A](segments => Right(PathMatchOutput((), segments)), _ => Nil)
+  final def root[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] = empty
 
   /** Simple path segment that matches nothing. This is the neutral of the || operator. */
   final def noMatch[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[Unit, A] =
@@ -274,10 +304,11 @@ object PathSegment {
     *
     * This can be useful for static resources.
     */
-  final def remainingSegments[A]: PathSegment[List[String], A] = factory[List[String], A](
-    segments => Right(PathMatchOutput(segments.map(_.content), Nil)),
-    _.map(Segment.apply)
-  )
+  final def remainingSegments[A](implicit pathMatchingError: PathMatchingError[A]): PathSegment[List[String], A] =
+    factory[List[String], A](
+      segments => Right(PathMatchOutput(segments.map(_.content), Nil)),
+      _.map(Segment.apply)
+    )
 
   /** [[PathSegment]] that matches one of the given different possibilities.
     *
