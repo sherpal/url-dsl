@@ -4,6 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import urldsl.errors.SimplePathMatchingError
 import urldsl.vocabulary.{Codec, Segment}
+import urldsl.url.UrlStringParserGenerator
 
 /** This class exposes some example of usage of the [[urldsl.language.PathSegment]] class.
   *
@@ -12,31 +13,51 @@ import urldsl.vocabulary.{Codec, Segment}
 final class PathSegmentExamples extends AnyFlatSpec with Matchers {
 
   /** The following import brings everything you need for [[urldsl.language.PathSegment]] usage. */
-  import urldsl.language.PathSegment.simplePathErrorImpl._
+  import urldsl.language.simpleErrorImpl._
+
+  val sampleUrlSegments = UrlStringParserGenerator.defaultUrlStringParserGenerator.parser(sampleUrl).segments
+  def endOfSegmentsErr(remaining: List[Segment]) = Left(pathError.endOfSegmentRequired(remaining))
 
   "Some matching examples" should "work" in {
 
     /** `root` is a "dummy" matcher which matches anything. It returns [[Unit]] when matching. */
-    root.matchRawUrl(sampleUrl) should be(Right(()))
+    root.matchSegments(sampleUrlSegments).map(_.output) should be(Right(()))
+    root.matchRawUrl(sampleUrl) should be(endOfSegmentsErr(sampleUrlSegments))
+
+    /** If you want root to match everything, ignoring the remaining segments, you can append a `ignoreRemaining` */
+    (root / ignoreRemainingSegments).matchRawUrl(sampleUrl) should be(Right(()))
+
+    /** Alternatively, you can use the `ignoreRemaining` method */
+    (root / ignoreRemainingSegments).matchRawUrl(sampleUrl) should be(Right(()))
+
+    /** Please note that `ignoreRemaining` will consume segment, so it can only be at the end! */
+    (root / ignoreRemainingSegments / "foo").matchRawUrl(sampleUrl) should be(Left(pathError.missingSegment))
 
     /** Appending a specific segment value to the root in order to match the first segment. It returns Unit when
       * matching, since we assume that the information is already known (it's "foo").
       */
-    (root / "foo").matchRawUrl(sampleUrl) should be(Right(()))
+    val foo = root / "foo"
+    foo.matchSegments(sampleUrlSegments).map(_.output) should be(Right(()))
+    foo.matchRawUrl(sampleUrl) should be(endOfSegmentsErr(sampleUrlSegments.tail))
+    (foo / ignoreRemainingSegments).matchRawUrl(sampleUrl) should be(Right(()))
 
     /** Appending a [[String]] segmennt in order to retrieve the information contained in the first segment.
       */
-    (root / segment[String]).matchRawUrl(sampleUrl) should be(Right("foo"))
+    (root / segment[String]).matchSegments(sampleUrlSegments).map(_.output) should be(Right("foo"))
+    (root / segment[String]).matchRawUrl(sampleUrl) should be(endOfSegmentsErr(sampleUrlSegments.tail))
+    (root / segment[String] / ignoreRemainingSegments).matchRawUrl(sampleUrl) should be(Right("foo"))
 
     /** You can also directly match other types than [[String]] (if you have the right implicits in scope). */
-    (root / "foo" / segment[Int]).matchRawUrl(sampleUrl) should be(Right(23))
-    (root / "foo" / 23 / segment[Boolean]).matchRawUrl(sampleUrl) should be(Right(true))
+    (foo / segment[Int]).matchSegments(sampleUrlSegments).map(_.output) should be(Right(23))
+    (foo / segment[Int]).matchRawUrl(sampleUrl) should be(endOfSegmentsErr(sampleUrlSegments.drop(2)))
+    (foo / 23 / segment[Boolean]).matchRawUrl(sampleUrl) should be(Right(true))
 
     /** Note that a segment of [[String]] will always manage to match, but of course you get a ... [[String]]. */
-    (root / "foo" / segment[String]).matchRawUrl(sampleUrl) should be(Right("23"))
+    (foo / segment[String]).matchSegments(sampleUrlSegments).map(_.output) should be(Right("23"))
+    (foo / segment[String]).matchRawUrl(sampleUrl) should be(endOfSegmentsErr(sampleUrlSegments.drop(2)))
 
     /** You can of course match several things at once, in which case outputs are "tupled". */
-    (root / "foo" / segment[Int] / segment[Boolean]).matchRawUrl(sampleUrl) should be(Right((23, true)))
+    (foo / segment[Int] / segment[Boolean]).matchRawUrl(sampleUrl) should be(Right((23, true)))
     (root / segment[String] / segment[Int] / segment[Boolean]).matchRawUrl(sampleUrl) should be(
       Right(("foo", 23, true))
     )
@@ -56,7 +77,7 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     /** You can also "group" several segments into a more meaningful class than a pair or a triplet. */
     case class Stuff(str: String, j: Int)
 
-    (s1 / s2)
+    (s1 / s2 / ignoreRemainingSegments)
       .as((t: (String, Int)) => Stuff(t._1, t._2), (s: Stuff) => s match { case Stuff(str, j) => (str, j) })
       .matchRawUrl(sampleUrl) should be(
       Right(Stuff("foo", 23))
@@ -66,10 +87,12 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
     implicit val stuffCodec: Codec[(String, Int), Stuff] =
       Codec.factory((Stuff.apply _).tupled, { case Stuff(str, j) => (str, j) })
 
-    (s1 / s2).as[Stuff].matchRawUrl(sampleUrl) should be(Right(Stuff("foo", 23)))
+    (s1 / s2 / ignoreRemainingSegments).as[Stuff].matchRawUrl(sampleUrl) should be(Right(Stuff("foo", 23)))
 
     /** [[urldsl.language.PathSegment]] can also be filtered to add some more restriction on the matching. */
-    s1.filter(_.length > 2, _ => SimplePathMatchingError.SimpleError("too short")).matchRawUrl(sampleUrl) should be(
+    (s1 / ignoreRemainingSegments)
+      .filter(_.length > 2, _ => SimplePathMatchingError.SimpleError("too short"))
+      .matchRawUrl(sampleUrl) should be(
       Right("foo")
     )
     s1.filter(_.length > 3, _ => SimplePathMatchingError.SimpleError("too short")).matchRawUrl(sampleUrl) should be(
@@ -80,28 +103,13 @@ final class PathSegmentExamples extends AnyFlatSpec with Matchers {
 
     /** As you probably noticed, [[urldsl.language.PathSegment]] are immutable objects and hence, can be reused freely.
       */
-    (s1 / s1).matchRawUrl(sampleUrl) should be(Right("foo", "23"))
+    (s1 / s1 / ignoreRemainingSegments).matchRawUrl(sampleUrl) should be(Right("foo", "23"))
 
     /** You also have the ability to compose [[urldsl.language.PathSegment]] "horizontally", by "branching" several
       * possibilities
       */
-    (root / (segment[Int] || segment[String])).matchRawUrl(sampleUrl) should be(Right(Right("foo")))
-
-    /** The [[urldsl.language.PathSegment]] trait is also very general, and while part of its power comes from its great
-      * "composability", it also comes from its ability to make quite generic things. One example is imposing that the
-      * path has ended.
-      */
-    (root / "foo" / 23 / true / endOfSegments).matchRawUrl(sampleUrl) should be(Right(()))
-    (root / "foo" / endOfSegments).matchRawUrl(sampleUrl) should be(
-      Left(
-        SimplePathMatchingError.EndOfSegmentRequired(
-          // this is the list of segments that were still present when reaching the `endOfSegments`
-          List(
-            Segment("23"),
-            Segment("true")
-          )
-        )
-      )
+    (root / (segment[Int] || segment[String]) / ignoreRemainingSegments).matchRawUrl(sampleUrl) should be(
+      Right(Right("foo"))
     )
 
   }

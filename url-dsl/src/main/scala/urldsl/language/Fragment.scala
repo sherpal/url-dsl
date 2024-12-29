@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
   * @tparam E
   *   type of the error that this PathSegment produces on "illegal" url paths.
   */
-trait Fragment[T, +E] extends UrlPart[T, E] {
+trait Fragment[T, E] extends UrlPart[T, E] {
 
   import Fragment.factory
 

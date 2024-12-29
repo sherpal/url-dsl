@@ -10,7 +10,7 @@ We represent the path and query parameters of a url as follows:
 import urldsl.language.simpleErrorImpl._
 import urldsl.vocabulary.{Segment, Param, UrlMatching}
 
-val path = root / "hello" / segment[Int] / segment[String] / endOfSegments
+val path = root / "hello" / segment[Int] / segment[String]
 val params = param[Int]("age") & listParam[String]("drinks")
 
 val pathWithParams = path ? params
@@ -96,17 +96,19 @@ passes the rest onto the following (when there are composed). For example, if yo
 string "foo", and an other that matches an `Int`, if you give the composition "foo/22", the first `PathSegment` consumes
 "foo" and passes "22" to the next one, which will them consume it.
 
+> Important (since 0.7.0 💥): the `PathSegment` has to fully match the path in order to succeed. If there is a left over segment after, then it will not match. You can use `ignoreRemainingSegments` if you want to only match the "beginning" of the path.
+
 #### Built in path segments
 
 There are a bunch of `PathSegment`s that are already defined, and should satisfy most of your basic needs. For example,
 the following things are implemented (you can look at the companion object of `PathSegment` to have the comprehensive
-list:
+list):
 
 - `root`: matches everything and passes all segments onto the next
 - `segment[T]` matches an element of type `T`, whose information is contained in only one segment, and passes the other
   segments onto the next
-- `endOfSegments`: which matches only the empty list of segments, and thus passes nothing onto the next (there should
-  never be a next, though)
+- `remainingSegments`: consumes all the remaining segments, returning the list
+- `ignoreRemainingSegments`: consumes all the remaining segments and ignore their content
 - the list goes on...
 
 #### Examples
@@ -277,6 +279,10 @@ import urldsl.language.dummyErrorImpl._
 ## A router example
 
 url-dsl was thought with one possible goal in mind, the one of creating a routing system. An example of how to do that can be found [here](shared/src/test/scala/urldsl/examples/RouterUseCaseExample.scala).
+
+## Moving from 0.6.x to 0.7.x
+
+There is a breaking change introduced in 0.7.0. If a `PathSegment` only partially match the path, then it will fail. If you were relying on this behaviour, you need to add `/ ignoreRemainingSegments` to your `PathSegment` instances.
 
 ## Moving from 0.4.x to 0.5.x
 

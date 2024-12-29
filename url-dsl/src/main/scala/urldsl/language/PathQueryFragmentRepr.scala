@@ -13,11 +13,11 @@ import urldsl.vocabulary.{
 
 final class PathQueryFragmentRepr[
     PathType,
-    +PathError,
+    PathError,
     ParamsType,
-    +ParamsError,
+    ParamsError,
     FragmentType,
-    +FragmentError
+    FragmentError
 ] private[language] (
     pathSegment: PathSegment[PathType, PathError],
     queryParams: QueryParameters[ParamsType, ParamsError],

@@ -9,7 +9,7 @@ import urldsl.url.{UrlStringGenerator, UrlStringParserGenerator}
   * A [[UrlPart]] is also able to generate its corresponding part of the URL by ingesting an element of type T. When
   * doing that, it outputs a String (whose semantic may vary depending on the type of [[UrlPart]] you are dealing with).
   */
-trait UrlPart[T, +E] {
+trait UrlPart[T, E] {
 
   def matchRawUrl(
       url: String,
@@ -39,11 +39,5 @@ object UrlPart {
 
     def createPart(t: T, encoder: UrlStringGenerator): String = generator(t, encoder)
   }
-
-  /** Type alias when you don't care about what kind of error is issued. [[Any]] can seem weird, but it has to be
-    * understood as "since it can fail with anything, I won't be able to do anything with the error, which means that I
-    * can only check whether it failed or not".
-    */
-  type SimpleUrlPart[T] = UrlPart[T, Any]
 
 }

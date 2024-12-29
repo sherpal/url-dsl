@@ -23,7 +23,7 @@ final class PathSegmentRawUrlSpec extends AnyFlatSpec with Matchers {
     (root / segment[String]).path(hello) should be(hello)
     (root / segment[Int] / segment[String]).path((number, hello)) should be(s"$number/$hello")
 
-    (root / segment[String] / "bold" / segment[Int] / endOfSegments).path((hello, number)) should be(
+    (root / segment[String] / "bold" / segment[Int]).path((hello, number)) should be(
       s"$hello/bold/$number"
     )
 

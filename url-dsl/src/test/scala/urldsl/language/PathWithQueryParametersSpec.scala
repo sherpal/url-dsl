@@ -17,7 +17,7 @@ class PathWithQueryParametersSpec extends munit.FunSuite {
     "http://localhost:8080/hello/2019/january?age=10&tuple=44-55&drinks=orange%20juice&drinks=water"
 
   test("Readme example should work") {
-    val path = root / "hello" / segment[Int] / segment[String] / endOfSegments
+    val path = root / "hello" / segment[Int] / segment[String]
     val params = param[Int]("age") & listParam[String]("drinks")
 
     val pathWithParams = path ? params
@@ -42,7 +42,7 @@ class PathWithQueryParametersSpec extends munit.FunSuite {
       Right(UrlMatching((2019, "january"), (10, List("orange juice", "water"), 44, 55)))
     )
     assertEquals(
-      path.matchSegments(
+      path.matchFullSegments(
         List(Segment("hello"), Segment("2019"), Segment("january"), Segment("16"))
       ),
       Left(urldsl.errors.SimplePathMatchingError.EndOfSegmentRequired(List(Segment("16"))))
